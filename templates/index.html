@@ -1,0 +1,3381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人工作台</title>
+    <style>
+/* ==================== 项目管理 · 科技风设计系统 ====================
+   设计原则：
+   1) 冷色石墨底 + 电气蓝主色，营造专业控制台质感
+   2) 三维结构：背景层（石墨）/ 表面层（白）/ 浮起层（卡）
+   3) 半透明描边 + 光晕，替代厚重投影，获得科技感而不嘈杂
+   4) 等宽数字（tabular-nums）用于所有计数/日期，对齐即专业
+   5) 全站唯一定义：.btn /.modal /.tag 三族，无页面私有样式
+   ============================================================== */
+:root{
+  /* ---- 主色：Electric Cobalt（交互唯一色相） ---- */
+  --brand-50:#eef4ff; --brand-100:#dbe7ff; --brand-200:#bed3ff;
+  --brand-300:#93b4fd; --brand-400:#5f8cf8; --brand-500:#2563eb;
+  --brand-600:#1d4fd7; --brand-700:#1a3fb0; --brand-800:#1a3789;
+  --brand-900:#1a316e;
+
+  /* ---- 强调：Cyber Teal（焦点/今日，受控第二色） ---- */
+  --accent-50:#e6fbfa; --accent-100:#c7f5f3; --accent-400:#14b8b0;
+  --accent-500:#0d9488; --accent-600:#0b7d73; --accent-700:#0a6159;
+
+  /* ---- 语义 ---- */
+  --danger-50:#fef2f2; --danger-100:#fee2e2; --danger-300:#fca5a5;
+  --danger-500:#dc2626; --danger-600:#b91c1c; --danger-700:#991b1b;
+  --warn-500:#d97706; --warn-100:#fef3c7; --warn-700:#b45309;
+  --ok-500:#059669; --ok-100:#d1fae5; --ok-700:#047857;
+
+  /* ---- 中性：石墨阶（Slate 冷灰，科技感来源） ---- */
+  --n-0:#ffffff; --n-25:#fcfdfe; --n-50:#f7f9fc; --n-75:#f1f5f9;
+  --n-100:#e9eef5; --n-200:#dbe3ed; --n-300:#c3cedb; --n-400:#94a3b8;
+  --n-500:#64748b; --n-600:#4a5768; --n-700:#334155; --n-800:#1e293b;
+  --n-900:#0f172a; --n-950:#080d17;
+
+  /* ---- 语义令牌（全站引用层） ---- */
+  --bg:var(--n-75);
+  --bg-grad-a:#eef3fa; --bg-grad-b:#f8fafc;
+  --surface:var(--n-0); --surface-2:var(--n-50); --surface-3:var(--n-100);
+  --ink:var(--n-900); --ink-2:var(--n-700); --ink-3:var(--n-500); --ink-4:var(--n-400);
+  --line:var(--n-200); --line-2:var(--n-100); --line-strong:var(--n-300);
+
+  --brand:var(--brand-500); --brand-deep:var(--brand-700); --brand-pale:var(--brand-50);
+  --brand-line:var(--brand-200);
+  --accent:var(--accent-500); --accent-deep:var(--accent-700); --accent-pale:var(--accent-50);
+  --accent-line:var(--accent-100);
+  --danger:var(--danger-500); --danger-deep:var(--danger-700); --danger-pale:var(--danger-50);
+  --danger-line:var(--danger-100);
+
+  /* ---- 兼容别名（沿用既有变量名，确保既有规则全部继续生效） ---- */
+  --paper:var(--n-75); --paper-card:var(--n-0); --paper-deep:var(--n-100);
+  --ink-soft:var(--n-600); --ink-faint:var(--n-400);
+  --seal:var(--brand-500); --seal-deep:var(--brand-700); --seal-pale:var(--brand-50); --seal-line:var(--brand-200);
+  --line-soft:var(--n-100);
+
+  /* ---- 阴影：分层 + 冷色投影 ---- */
+  --sh-xs:0 1px 2px rgba(15,23,42,.05);
+  --sh-sm:0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.04);
+  --sh-md:0 4px 12px rgba(15,23,42,.08), 0 1px 3px rgba(15,23,42,.05);
+  --sh-lg:0 12px 28px rgba(15,23,42,.12), 0 4px 8px rgba(15,23,42,.06);
+  --sh-xl:0 24px 56px rgba(15,23,42,.20), 0 8px 16px rgba(15,23,42,.10);
+  --sh-brand:0 4px 14px rgba(37,99,235,.24);
+  --sh-focus:0 0 0 3px rgba(37,99,235,.14);
+
+  /* ---- 圆角 ---- */
+  --r-xs:3px; --r-sm:5px; --r-md:7px; --r-lg:10px; --r-xl:14px;
+
+  /* ---- 字体 ---- */
+  --font-title:"Inter","HarmonyOS Sans SC","PingFang SC","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif;
+  --font-body:"Inter","HarmonyOS Sans SC","PingFang SC","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif;
+  --font-ui:"Inter","HarmonyOS Sans SC","PingFang SC","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono","SF Mono","Cascadia Mono","Consolas","Menlo",monospace;
+
+  --header-h:60px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+
+/* 科技感底纹：极细网格 + 冷色光晕，低对比不抢内容 */
+body{
+  font-family:var(--font-body);
+  background:
+    radial-gradient(1200px 600px at 78% -10%, rgba(37,99,235,.055), transparent 62%),
+    radial-gradient(900px 500px at 2% 102%, rgba(13,148,136,.045), transparent 60%),
+    linear-gradient(180deg,var(--bg-grad-a) 0%,var(--bg-grad-b) 46%,var(--n-75) 100%);
+  background-attachment:fixed;
+  color:var(--ink); min-height:100vh; -webkit-font-smoothing:antialiased;
+  font-size:13.5px; line-height:1.5;
+}
+/* 数字全部等宽对齐 —— 科技感的细节基石 */
+.rc-num,.report-card .rc-num,.count,.board-stat,.ttf-count,.rb-val,.task-progress,.cell-due,
+.cell-progress,.ri-meta,.rf-time,.bell-badge,.nav-badge{
+  font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;
+}
+::selection{background:var(--brand-200);color:var(--brand-900);}
+
+/* ==================== 顶栏 ==================== */
+.header{
+  height:var(--header-h); box-sizing:border-box;
+  background:linear-gradient(180deg,#16233f 0%,#101a30 55%,#0c1526 100%);
+  color:var(--n-100);
+  padding:0 24px; display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(37,99,235,.42);
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset, 0 6px 22px rgba(8,13,23,.30);
+  position:relative; z-index:20;
+  animation:riseIn .45s ease both;
+}
+/* 顶栏底边发光条：科技感关键锚点 */
+.header::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(37,99,235,.85) 18%,rgba(13,148,136,.75) 52%,rgba(37,99,235,.85) 82%,transparent);
+  opacity:.9;
+}
+.header h1{
+  font-family:var(--font-title); font-size:16.5px;font-weight:650;letter-spacing:.6px;
+  display:flex;align-items:center;gap:11px; color:#fff;
+}
+.header h1::before{
+  content:"工"; display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(145deg,#3b82f6,#2563eb 52%,#1a3fb0);
+  color:#fff; font-size:15px;font-weight:700;
+  border:1px solid rgba(147,180,253,.45);
+  box-shadow:0 0 0 1px rgba(37,99,235,.25), 0 3px 10px rgba(37,99,235,.40), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.header h1 span{opacity:.62;font-weight:400;font-size:12.5px;letter-spacing:0;}
+.header-actions{display:flex;gap:9px;align-items:center;}
+.header-actions input[type="date"],.header-actions input[type="text"]{
+  padding:7px 12px;border:1px solid rgba(148,163,184,.28); border-radius:var(--r-md);
+  background:rgba(148,163,184,.10);color:var(--n-100);
+  font-family:var(--font-ui);font-size:12.5px; transition:all .18s ease;
+}
+.header-actions input[type="date"]:focus,.header-actions input[type="text"]:focus{
+  outline:none;border-color:rgba(37,99,235,.75);background:rgba(37,99,235,.14);
+  box-shadow:0 0 0 3px rgba(37,99,235,.18);
+}
+.header-actions input[type="text"]{width:210px;}
+.header-actions input::placeholder{color:rgba(148,163,184,.72);}
+.header-actions input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.82);cursor:pointer;}
+
+/* ==================== 提醒面板（浮层） ==================== */
+.bell-btn{position:relative;font-size:15px;line-height:1;padding:7px 11px;}
+.bell-badge{
+  position:absolute;top:-6px;right:-6px;
+  background:linear-gradient(180deg,#f87171,var(--danger-500));
+  color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;font-size:10.5px;
+  font-weight:700;text-align:center;padding:0 5px;
+  border:1.5px solid #16233f;
+  box-shadow:0 2px 8px rgba(220,38,38,.55);
+}
+.remind-panel{
+  position:fixed;top:calc(var(--header-h) + 10px);right:18px;width:400px;max-height:72vh;overflow-y:auto;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:var(--sh-xl);z-index:1000;padding:12px;
+  animation:popIn .2s cubic-bezier(.2,.9,.3,1.2) both;
+}
+.remind-panel::-webkit-scrollbar{width:8px;}
+.remind-panel::-webkit-scrollbar-thumb{background:var(--n-300);border-radius:4px;border:2px solid transparent;background-clip:content-box;}
+.remind-panel::-webkit-scrollbar-thumb:hover{background:var(--n-400);background-clip:content-box;}
+.remind-group{margin-bottom:10px;}
+.remind-group-title{
+  font-size:12px;font-weight:700;padding:7px 10px;border-radius:var(--r-sm);
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;
+  letter-spacing:.3px;
+}
+.remind-group-title .rg-n{font-weight:600;font-family:var(--font-mono);font-size:11.5px;opacity:.9;}
+.rg-overdue{background:var(--danger-pale);color:var(--danger-deep);box-shadow:inset 2px 0 0 var(--danger-500);}
+.rg-today{background:var(--accent-pale);color:var(--accent-deep);box-shadow:inset 2px 0 0 var(--accent-500);}
+.rg-soon{background:var(--brand-pale);color:var(--brand-deep);box-shadow:inset 2px 0 0 var(--brand-500);}
+.rg-nodue{background:var(--surface-3);color:var(--ink-3);box-shadow:inset 2px 0 0 var(--n-300);}
+.remind-item{
+  display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:var(--r-sm);
+  cursor:pointer;font-size:13px;color:var(--ink-2);align-items:baseline;
+  transition:background .15s ease;
+}
+.remind-item:hover{background:var(--brand-pale);}
+.remind-item .ri-title{word-break:break-word;}
+.remind-item .ri-meta{font-size:11.5px;color:var(--ink-4);white-space:nowrap;flex-shrink:0;font-family:var(--font-mono);}
+.remind-foot{display:flex;justify-content:space-between;align-items:center;padding:8px 6px 2px;border-top:1px solid var(--line-2);margin-top:6px;}
+.remind-foot .rf-time{font-size:11px;color:var(--ink-4);font-family:var(--font-mono);}
+.remind-empty{padding:26px;text-align:center;color:var(--ink-4);font-size:13px;}
+
+/* ==================== 按钮（全站唯一族） ==================== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:7px 15px;border:1px solid var(--line-strong); border-radius:var(--r-md);cursor:pointer;
+  font-size:12.5px;font-family:var(--font-ui); transition:all .16s ease;font-weight:600;
+  background:var(--surface);color:var(--ink-2); white-space:nowrap;
+  box-shadow:var(--sh-xs);
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--sh-md);color:var(--ink);border-color:var(--n-400);}
+.btn:active{transform:translateY(0);box-shadow:var(--sh-xs);}
+.btn:focus-visible{outline:none;box-shadow:var(--sh-focus);}
+.btn-white{background:var(--surface);color:var(--ink-2);border-color:var(--line-strong);}
+.btn-white:hover{background:var(--n-25);}
+.btn-ghost{background:rgba(148,163,184,.10);color:var(--n-100);border-color:rgba(148,163,184,.30);box-shadow:none;}
+.btn-ghost:hover{background:rgba(148,163,184,.20);color:#fff;border-color:rgba(148,163,184,.5);}
+.btn-primary{
+  background:linear-gradient(180deg,var(--brand-400) 0%,var(--brand-500) 42%,var(--brand-600) 100%);
+  color:#fff;border-color:var(--brand-600);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22), var(--sh-brand);
+}
+.btn-primary:hover{
+  background:linear-gradient(180deg,#6d99fa 0%,var(--brand-500) 42%,var(--brand-700) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.26), 0 8px 20px rgba(37,99,235,.34);
+  color:#fff;border-color:var(--brand-700);
+}
+.btn-success{
+  background:linear-gradient(180deg,var(--n-700) 0%,var(--n-800) 60%,var(--n-900) 100%);
+  color:#fff;border-color:var(--n-900);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 3px 10px rgba(15,23,42,.24);
+}
+.btn-success:hover{background:linear-gradient(180deg,#3d4d63,var(--n-800) 60%,var(--n-950));color:#fff;}
+.btn-danger{background:var(--danger-500);color:#fff;border-color:var(--danger-600);box-shadow:0 2px 8px rgba(220,38,38,.24);}
+.btn-danger:hover{background:var(--danger-600);color:#fff;}
+.btn-sm{padding:4px 10px;font-size:11.5px;border-radius:var(--r-sm);}
+.btn-link{background:none;border:none;color:var(--brand);cursor:pointer;font-size:12px;padding:2px 4px;font-family:var(--font-ui);box-shadow:none;font-weight:600;}
+.btn-link:hover{text-decoration:underline;transform:none;box-shadow:none;}
+.btn.active,.task-table-filter .btn.active{background:var(--brand);color:#fff;border-color:var(--brand-deep);box-shadow:inset 0 1px 0 rgba(255,255,255,.2), var(--sh-brand);}
+.task-table-filter .btn.active:hover{background:var(--brand-600);color:#fff;border-color:var(--brand-700);}
+
+/* ==================== 布局：侧边栏 + 内容 ==================== */
+.layout{display:flex;height:calc(100vh - var(--header-h));}
+.sidebar{
+  width:196px;flex-shrink:0;
+  background:linear-gradient(180deg,#13203a 0%,#0e1830 55%,#0a1226 100%);
+  padding:18px 12px 16px;display:flex;flex-direction:column;gap:4px;
+  border-right:1px solid rgba(37,99,235,.30);
+  box-shadow:1px 0 0 rgba(255,255,255,.03) inset, 4px 0 20px rgba(8,13,23,.16);
+  position:relative;
+}
+.sidebar .nav-title{
+  color:rgba(148,163,184,.58);font-family:var(--font-title);font-size:11px;
+  letter-spacing:3.5px;padding:4px 12px 14px;font-weight:700;
+}
+.sidebar .nav-title::after{
+  content:"";display:block;width:24px;height:2px;margin:9px 0 0 1px;border-radius:1px;
+  background:linear-gradient(90deg,var(--brand-500),var(--accent-500));opacity:.85;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-md);
+  color:var(--n-200);opacity:.80;cursor:pointer;font-family:var(--font-ui);font-size:13.5px;
+  border:1px solid transparent;background:transparent;text-align:left;transition:all .16s ease;font-weight:550;width:100%;
+  position:relative;
+}
+.nav-btn:hover{background:rgba(37,99,235,.16);opacity:1;color:#fff;border-color:rgba(37,99,235,.28);}
+.nav-btn.active{
+  background:linear-gradient(100deg,rgba(37,99,235,.34),rgba(37,99,235,.16));
+  color:#fff;opacity:1;border-color:rgba(95,140,248,.45);
+  box-shadow:inset 3px 0 0 var(--brand-400), 0 3px 14px rgba(37,99,235,.24);
+}
+.nav-btn .nav-ico{font-size:15px;line-height:1;width:18px;text-align:center;filter:saturate(.9);}
+.nav-spacer{flex:1;}
+.nav-btn.exit-btn{margin-top:auto;color:#fca5a5;background:rgba(220,38,38,.14);border:1px solid rgba(220,38,38,.34);opacity:1;}
+.nav-btn.exit-btn:hover{background:rgba(220,38,38,.28);color:#fecaca;border-color:rgba(220,38,38,.55);}
+
+.content{flex:1;min-width:0;overflow:hidden;}
+.view{display:none;}
+.view.active{display:flex;flex-direction:column;height:100%;box-sizing:border-box;padding:20px 22px;animation:riseIn .35s ease both;overflow:hidden;}
+
+/* ==================== 面板 ==================== */
+.panel-page{width:100%;margin:0;display:flex;flex-direction:column;gap:16px;flex:1;overflow-y:auto;padding-right:8px;}
+.panel-page::-webkit-scrollbar,.task-column-body::-webkit-scrollbar,.task-table-scroll::-webkit-scrollbar,.remind-panel::-webkit-scrollbar{width:9px;height:9px;}
+.panel-page::-webkit-scrollbar-track,.task-column-body::-webkit-scrollbar-track,.task-table-scroll::-webkit-scrollbar-track,.remind-panel::-webkit-scrollbar-track{background:transparent;}
+.panel-page::-webkit-scrollbar-thumb,.task-column-body::-webkit-scrollbar-thumb,.task-table-scroll::-webkit-scrollbar-thumb,.remind-panel::-webkit-scrollbar-thumb{
+  background:var(--n-300);border-radius:5px;border:2px solid transparent;background-clip:content-box;
+}
+.panel-page::-webkit-scrollbar-thumb:hover,.task-column-body::-webkit-scrollbar-thumb:hover,.task-table-scroll::-webkit-scrollbar-thumb:hover,.remind-panel::-webkit-scrollbar-thumb:hover{background:var(--n-400);background-clip:content-box;}
+.panel{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:18px 20px;
+  box-shadow:var(--sh-md);
+  position:relative;
+}
+.panel h3{
+  font-family:var(--font-title);font-size:14.5px;font-weight:650;color:var(--ink);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;letter-spacing:.4px;
+  padding-left:11px;border-left:3px solid var(--brand);
+}
+.panel h3 .gh-count{
+  font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--brand-700);
+  background:var(--brand-pale);border:1px solid var(--brand-line);border-radius:10px;padding:1px 8px;
+}
+
+/* ==================== 任务看板 ==================== */
+.tasks-section{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;animation:riseIn .45s ease both;}
+.tasks-section h2{
+  font-family:var(--font-title);font-size:15.5px;font-weight:650;letter-spacing:.4px;
+  margin-bottom:13px;display:flex;align-items:center;gap:9px;color:var(--ink);
+}
+.tasks-section h2::before{content:"";width:3px;height:16px;background:linear-gradient(180deg,var(--brand-400),var(--brand-600));border-radius:2px;box-shadow:0 0 8px rgba(37,99,235,.4);}
+.task-board{display:flex;gap:13px;flex:1;min-height:0;}
+.task-column{
+  flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:13px;
+  box-shadow:var(--sh-sm);display:flex;flex-direction:column;min-width:0;min-height:0;
+  transition:border-color .18s ease, box-shadow .18s ease;
+}
+.task-column-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;
+  padding-bottom:10px;border-bottom:1px solid var(--line-2);
+  font-family:var(--font-title);font-size:13.5px;font-weight:650;color:var(--ink-2);letter-spacing:.3px;
+}
+/* 列头左侧色条：状态在结构层即被区分 */
+.task-column[data-status="todo"] .task-column-header{box-shadow:inset 0 -2px 0 var(--n-300);}
+.task-column[data-status="in_progress"] .task-column-header{box-shadow:inset 0 -2px 0 var(--brand-500);}
+.task-column[data-status="done"] .task-column-header{box-shadow:inset 0 -2px 0 var(--n-300);}
+.task-column-header .count{
+  background:var(--surface-3);color:var(--ink-3);padding:1px 9px;border-radius:10px;
+  font-size:11.5px;font-family:var(--font-mono);font-weight:600;border:1px solid var(--line-2);
+}
+.task-column-body{flex:1;overflow-y:auto;min-height:0;padding-right:3px;}
+
+.task-card{
+  background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--n-300);
+  border-radius:var(--r-md);padding:9px 12px;margin-bottom:7px;cursor:pointer;
+  transition:box-shadow .18s ease, border-color .18s ease, transform .18s ease;
+  position:relative;box-shadow:var(--sh-xs);
+  display:flex;flex-direction:column;
+}
+.task-card:hover{
+  border-color:var(--brand-line);border-left-color:var(--brand);
+  box-shadow:var(--sh-md), 0 0 0 3px rgba(37,99,235,.07);
+  transform:translateY(-2px);
+  z-index:60;   /* 悬停时抬升，保证描述浮层压在后续卡片之上 */
+}
+.task-card .task-title{
+  font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px;word-break:break-word;
+  padding-right:64px;font-family:var(--font-ui);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.task-card .task-desc{font-size:11.5px;color:var(--ink-4);margin-bottom:5px;word-break:break-word;line-height:1.45;font-family:var(--font-body);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.task-card .task-meta{font-size:11px;color:var(--ink-4);display:flex;flex-wrap:nowrap;gap:5px;align-items:center;font-family:var(--font-ui);overflow:hidden;}
+.task-card .task-meta .tag{background:var(--surface-3);padding:2px 7px;border-radius:var(--r-xs);color:var(--ink-3);border:1px solid var(--line-2);font-weight:500;white-space:nowrap;flex-shrink:0;}
+.task-card .task-meta .tag-project{background:var(--brand-pale);color:var(--brand-deep);border-color:var(--brand-line);font-weight:600;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.task-card .task-meta .tag-priority-high{background:var(--warn-500);color:#fff;border-color:var(--warn-700);font-weight:700;}
+.task-card .task-meta .tag-priority-medium{background:var(--surface-3);color:var(--ink-3);border-color:var(--line-strong);font-weight:600;}
+.task-card .task-meta .tag-priority-low{background:transparent;color:var(--n-500);border-color:var(--line-strong);font-weight:500;}
+/* 优先级三档改用「填充度 + 顶边条 + 标题字重」三重编码。
+   原来三档都是蓝色系仅深浅不同，在 11px 字号上分辨不出来。
+   琥珀 --warn 是设计系统里唯一未被占用的语义色相（红=逾期 / 青=今日 / 蓝=临期），
+   且只在 high 上出现，不会造成色彩泛滥。 */
+.task-card.prio-high:not(.done)::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:2px;
+  background:var(--warn-500);border-radius:0 2px 0 0;pointer-events:none;
+}
+.task-card.prio-high:not(.done) .task-title{font-weight:700;color:var(--n-950);}
+.task-card.prio-low:not(.done) .task-title{font-weight:500;color:var(--ink-2);}
+.task-card .task-meta a{color:var(--brand);text-decoration:none;font-weight:600;white-space:nowrap;flex-shrink:0;}
+.task-card .task-meta a:hover{text-decoration:underline;}
+.task-card .task-actions{display:none;position:absolute;right:9px;top:9px;gap:5px;z-index:3;}
+.task-card:hover .task-actions{display:flex;}
+.task-card .task-actions button{padding:3px 8px;border:none;border-radius:var(--r-xs);cursor:pointer;font-size:10.5px;font-family:var(--font-ui);font-weight:600;}
+/* 已完成：降噪 + 顶部细进度条，替代印章（科技风） */
+.task-card.done{background:var(--surface-2);border-left-color:var(--n-300);opacity:.95;}
+.task-card.done .task-title{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--n-300);}
+.task-card.done::after{
+  content:"DONE";position:absolute;right:11px;bottom:9px;
+  font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--ink-4);
+  background:var(--surface-3);border:1px solid var(--line);border-radius:var(--r-xs);
+  padding:1px 6px;letter-spacing:1.2px;pointer-events:none;opacity:.9;
+}
+.task-card .task-progress{font-size:11px;color:var(--ink-4);margin-top:4px;display:flex;gap:6px;align-items:center;line-height:1.4;}
+.task-card .task-progress .tp-count{flex-shrink:0;color:var(--brand-700);font-weight:700;font-family:var(--font-mono);}
+.task-card .task-progress .tp-latest{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
+.task-card .task-note{
+  font-size:11.5px;color:var(--ink-2);background:var(--surface-3);
+  border-left:2px solid var(--n-300);border-radius:var(--r-xs);padding:3px 8px;margin-top:4px;line-height:1.45;
+  word-break:break-word;font-family:var(--font-body);
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* ---- 卡片紧迫度信号：逾期红 / 今日青 / 3天内蓝（语义色，一列里一眼锁定要动的） ---- */
+.task-card.is-overdue{border-left-color:var(--danger);}
+.task-card.is-overdue:hover{border-left-color:var(--danger);}
+.task-card.is-today{border-left-color:var(--accent);}
+.task-card.is-today:hover{border-left-color:var(--accent);}
+.task-card.is-soon{border-left-color:var(--brand-500);}
+.task-card.is-soon:hover{border-left-color:var(--brand-500);}
+.task-card .task-meta .tag-due{font-family:var(--font-mono);letter-spacing:0;}
+.task-card .task-meta .tag-due.is-overdue{background:var(--danger);color:#fff;border-color:var(--danger);font-weight:700;}
+.task-card .task-meta .tag-due.is-today{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700;}
+.task-card .task-meta .tag-due.is-soon{background:var(--brand-pale);color:var(--brand-deep);border-color:var(--brand-line);font-weight:700;}
+
+/* ---- 描述悬停浮层：悬停描述行时在「卡片外侧」展开完整内容 ----
+   关键：定位参照是卡片（.task-desc-wrap 不设 position），浮层落在卡片下方/上方，
+   绝不覆盖卡内任何控件（尤其元信息行的 🔗 链接）。
+   触发范围收在描述行本身（1.45em 高）——鼠标一离开就收起，链接立刻可见可点。
+   pointer-events:none 让浮层永不拦截点击，即使它压在下一张卡片上。 */
+.task-card .task-desc-wrap{height:1.45em;flex-shrink:0;}
+.task-desc-wrap:hover .task-desc{
+  position:absolute;left:0;right:0;top:100%;margin:5px 0 0;z-index:5;
+  display:block;overflow:hidden;max-height:200px;cursor:default;pointer-events:none;
+  background:var(--surface);border:1px solid var(--brand-line);border-radius:var(--r-sm);
+  padding:8px 11px;box-shadow:var(--sh-lg);color:var(--ink-2);
+}
+/* 列底部的卡片下方空间不足时，改由 JS 打上该类，浮层向上展开 */
+.task-desc-wrap.desc-panel-up:hover .task-desc{top:auto;bottom:100%;margin:0 0 5px;}
+
+/* ---- 密度档位：紧凑档只保留「什么事 + 什么时候」，一屏容纳更多 ---- */
+.task-board.is-compact .task-card{padding:7px 11px;margin-bottom:5px;}
+.task-board.is-compact .task-card .task-desc-wrap{display:none;}
+.task-board.is-compact .task-card .task-title{-webkit-line-clamp:1;}
+.task-board.is-compact .task-card .task-progress{display:none;}
+.task-board.is-compact .task-card .task-note{display:none;}
+.board-density-toggle{display:inline-flex;align-items:center;gap:4px;padding:2px;background:var(--surface-3);border:1px solid var(--line-strong);border-radius:var(--r-md);box-shadow:var(--sh-xs);}
+.board-density-toggle .bdt-btn{
+  border:none;background:transparent;padding:6px 12px;cursor:pointer;border-radius:var(--r-sm);
+  font-family:var(--font-ui);font-size:12.5px;font-weight:600;color:var(--ink-3);transition:all .16s ease;
+}
+.board-density-toggle .bdt-btn:hover{color:var(--brand);}
+.board-density-toggle .bdt-btn.active{background:var(--surface);color:var(--brand-700);box-shadow:var(--sh-sm);}
+.add-task-btn{
+  display:block;width:100%;padding:9px;border:1px dashed var(--n-300);border-radius:var(--r-md);
+  background:transparent;color:var(--ink-4);cursor:pointer;font-size:12.5px;
+  font-family:var(--font-ui);transition:all .18s ease;margin-top:10px;font-weight:600;
+}
+.add-task-btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-pale);border-style:solid;}
+.task-card[draggable="true"]{cursor:grab;}
+.task-card[draggable="true"]:active{cursor:grabbing;}
+.task-card.dragging{opacity:.42;transform:scale(.97) rotate(-.4deg);}
+.task-column.drag-over{background:var(--brand-pale);border:1px dashed var(--brand);box-shadow:inset 0 0 0 3px rgba(37,99,235,.07);}
+.task-column.drag-over .task-column-body{min-height:100px;}
+
+/* ==================== 看板工具栏 / 模式切换 ==================== */
+.board-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:11px;flex-wrap:wrap;}
+.board-mode-toggle{
+  display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--r-md);overflow:hidden;
+  background:var(--surface-3);padding:2px;gap:2px;box-shadow:var(--sh-xs);
+}
+.board-mode-toggle button{
+  border:none;background:transparent;padding:6px 15px;cursor:pointer;font-family:var(--font-ui);
+  font-size:12.5px;font-weight:600;color:var(--ink-3);transition:all .16s ease;
+  display:flex;align-items:center;gap:6px;border-radius:var(--r-sm);
+}
+.board-mode-toggle button.active{background:var(--surface);color:var(--brand-700);box-shadow:var(--sh-sm);}
+.board-mode-toggle button:not(.active):hover{color:var(--brand);background:rgba(37,99,235,.06);}
+.board-stat{font-size:12px;color:var(--ink-4);font-family:var(--font-mono);margin-left:auto;white-space:nowrap;flex:0 0 auto;}
+/* ---- 看板检索：即时本地过滤 + 命中高亮 ---- */
+.board-search-hit{
+  display:none;align-items:center;gap:5px;flex:0 0 auto;
+  padding:3px 9px;border-radius:999px;white-space:nowrap;
+  font-family:var(--font-mono);font-size:11.5px;font-weight:600;
+  background:var(--brand-50);color:var(--brand-700);border:1px solid var(--brand-line);
+}
+.board-search-hit.is-empty{background:var(--n-100);color:var(--ink-3);border-color:var(--line-strong);}
+.board-search-hit.is-empty b{color:var(--ink-2);}
+.board-toolbar.is-searching .board-search-hit{display:inline-flex;}
+.board-search-hit b{font-weight:700;}
+.board-search-wrap{position:relative;display:inline-flex;align-items:center;flex:0 1 220px;min-width:120px;}
+.board-search-wrap .bs-ico{
+  position:absolute;left:9px;width:13px;height:13px;
+  color:var(--ink-4);pointer-events:none;transition:color .16s ease;
+}
+.board-search-input{
+  width:100%;min-width:0;padding:6px 26px 6px 27px;
+  font-family:var(--font-ui);font-size:12.5px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-md);
+  box-shadow:var(--sh-xs);transition:border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+.board-search-input::placeholder{color:var(--ink-4);}
+.board-search-input:hover{border-color:var(--brand-400);}
+.board-search-input:focus{outline:none;border-color:var(--brand-500);box-shadow:var(--sh-focus);}
+.board-toolbar.is-searching .board-search-wrap .bs-ico{color:var(--brand-500);}
+.board-toolbar.is-searching .board-search-input{border-color:var(--brand-400);background:var(--brand-50);}
+/* ---- 窄屏工具栏降级：flex-wrap 换行后不会回头收缩，只能压总宽 ---- */
+@media (max-width:1439px){
+  .board-toolbar{gap:7px;}
+  .board-mode-toggle button{padding:6px 11px;}
+  .board-density-toggle .bdt-btn{padding:6px 9px;}
+  .board-search-wrap{flex:0 1 175px;}
+  .board-stat{font-size:11.5px;}
+  .board-toolbar.is-searching .board-stat{display:none;}
+}
+@media (max-width:1199px){
+  .board-toolbar{gap:6px;}
+  .board-search-wrap{flex:0 1 120px;}
+}
+.board-search-clear{
+  position:absolute;right:5px;width:18px;height:18px;padding:0;
+  display:none;align-items:center;justify-content:center;
+  border:none;border-radius:50%;background:var(--n-200);color:var(--ink-3);
+  font-size:10.5px;line-height:1;cursor:pointer;transition:background .15s ease,color .15s ease;
+}
+.board-toolbar.is-searching .board-search-clear{display:flex;}
+.board-search-clear:hover{background:var(--danger-500);color:#fff;}
+.board-search-clear:focus-visible{outline:2px solid var(--brand-400);outline-offset:1px;}
+/* 命中片段：琥珀为设计系统中唯一空闲语义色相，仅用于检索高亮 */
+mark.kw-hit{background:var(--warn-100);color:var(--warn-700);border-radius:2px;padding:0 1.5px;font-weight:700;}
+.task-table-wrap{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-md);overflow:hidden;}
+.task-table-scroll{flex:1;min-height:0;overflow:auto;}
+.task-table-filter{
+  flex-shrink:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px 13px;background:var(--surface-2);border-bottom:1px solid var(--line);
+}
+.task-table-filter .ttf-label{font-family:var(--font-ui);font-size:12.5px;color:var(--ink-3);font-weight:700;letter-spacing:.3px;}
+.task-table-filter select{
+  padding:5px 9px;border:1px solid var(--line-strong);border-radius:var(--r-sm);font-size:12px;
+  font-family:var(--font-ui);background:var(--surface);color:var(--ink-2);max-width:180px;
+  transition:all .16s ease;cursor:pointer;
+}
+.task-table-filter select:focus,.task-table-filter select:hover{border-color:var(--brand-400);box-shadow:var(--sh-focus);outline:none;}
+.task-table-filter .ttf-check{font-family:var(--font-ui);font-size:12px;color:var(--ink-2);display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;}
+.task-table-filter .ttf-check input{accent-color:var(--brand-500);width:14px;height:14px;cursor:pointer;}
+.task-table-filter .ttf-check input:focus-visible{outline:2px solid var(--brand-400);outline-offset:1px;}
+.task-table-filter .ttf-count{margin-left:auto;font-size:11.5px;color:var(--ink-4);font-family:var(--font-mono);}
+.task-table .col-check{width:36px;text-align:center;padding-left:0;padding-right:0;}
+.task-table .col-check input{width:15px;height:15px;accent-color:var(--brand-500);cursor:pointer;}
+.task-table-batch{
+  flex-shrink:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:9px 13px;background:var(--brand-pale);border-bottom:1px solid var(--brand-line);
+  box-shadow:inset 0 2px 0 var(--brand-500);
+}
+.task-table-batch .ttb-info{font-family:var(--font-ui);font-size:12.5px;color:var(--ink-2);}
+.task-table-batch .ttb-info b{color:var(--brand-700);font-family:var(--font-mono);}
+
+/* ==================== 数据表格 ==================== */
+.task-table{width:100%;border-collapse:collapse;font-family:var(--font-ui);font-size:12.5px;min-width:780px;}
+.task-table thead th{
+  position:sticky;top:0;z-index:2;
+  background:linear-gradient(180deg,var(--n-50),var(--n-100));
+  color:var(--ink-2);text-align:left;
+  padding:11px 12px;font-weight:700;font-size:11.5px;border-bottom:2px solid var(--line-strong);
+  white-space:nowrap;cursor:pointer;user-select:none;letter-spacing:.6px;text-transform:uppercase;
+  transition:color .15s ease, background .15s ease;
+}
+.task-table thead th.no-sort{cursor:default;}
+.task-table thead th .sort-ico{color:var(--n-400);margin-left:4px;font-size:9px;}
+.task-table thead th.sorted-asc .sort-ico,.task-table thead th.sorted-desc .sort-ico{color:var(--brand-500);}
+.task-table thead th.sorted-asc,.task-table thead th.sorted-desc{color:var(--brand-700);background:linear-gradient(180deg,var(--brand-50),var(--brand-100));}
+.task-table thead th:hover:not(.no-sort){color:var(--brand-700);}
+.task-table tbody td{padding:9px 12px;border-bottom:1px solid var(--line-2);color:var(--ink-2);vertical-align:middle;}
+.task-table tbody tr{cursor:pointer;transition:background .13s ease;}
+.task-table tbody tr:hover{background:var(--brand-50);box-shadow:inset 3px 0 0 var(--brand-400);}
+.task-table tbody tr.row-done{background:var(--surface-2);}
+.task-table tbody tr.row-done .cell-title{text-decoration:line-through;color:var(--ink-4);text-decoration-color:var(--n-300);}
+.task-table .cell-title{font-weight:600;max-width:340px;color:var(--ink);}
+.task-table .cell-title .t-sub{display:block;font-size:11px;color:var(--ink-4);font-weight:400;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
+.task-table .tag-status,.tag-status{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:650;letter-spacing:.2px;}
+.tag-status.todo{background:var(--surface-3);color:var(--ink-3);border:1px solid var(--line);}
+.tag-status.in_progress{background:var(--brand-pale);color:var(--brand-deep);border:1px solid var(--brand-line);}
+.tag-status.done{background:var(--surface-3);color:var(--ink-4);border:1px solid var(--line);}
+.task-table .tbl-status-select,.task-table .tbl-pri-select,.task-table select{
+  font-family:var(--font-ui);font-size:11.5px;padding:3px 6px;border-radius:var(--r-sm);
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);cursor:pointer;max-width:98px;
+  transition:all .16s ease;font-weight:600;
+}
+.task-table .tbl-status-select:focus,.task-table .tbl-pri-select:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+.task-table .tbl-status-select.st-todo{color:var(--ink-3);background:var(--surface-3);border-color:var(--line);}
+.task-table .tbl-status-select.st-in_progress{color:var(--brand-deep);border-color:var(--brand-line);background:var(--brand-pale);}
+.task-table .tbl-status-select.st-done{color:var(--ink-4);border-color:var(--line);background:var(--surface-3);}
+.task-table .tag-pri,.tag-pri{display:inline-block;padding:2px 9px;border-radius:var(--r-xs);font-size:11px;font-weight:650;}
+.tag-pi-high{background:var(--brand);color:#fff;border:1px solid var(--brand-deep);}
+.tag-pi-medium{background:var(--brand-pale);color:var(--brand-deep);border:1px solid var(--brand-line);}
+.tag-pi-low{background:transparent;color:var(--ink-4);border:1px solid var(--line);}
+.task-table .tag-proj{background:var(--brand-pale);color:var(--brand-deep);border:1px solid var(--brand-line);padding:2px 8px;border-radius:var(--r-xs);font-size:11px;font-weight:600;}
+.task-table .cell-due{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-3);}
+.task-table .cell-due.overdue{color:var(--danger);font-weight:700;background:var(--danger-pale);border-radius:var(--r-xs);padding:2px 6px;}
+.task-table .cell-progress{color:var(--ink-3);font-weight:600;font-family:var(--font-mono);font-size:11.5px;}
+.task-table .cell-note{color:var(--ink-3);font-size:11.5px;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.task-table .cell-actions{white-space:nowrap;text-align:right;}
+.task-table .cell-actions button{padding:3px 9px;border:none;border-radius:var(--r-xs);cursor:pointer;font-size:10.5px;font-family:var(--font-ui);font-weight:600;margin-left:4px;}
+/* 分组行 */
+.task-table .group-header td{
+  background:var(--surface-3);font-family:var(--font-ui);font-weight:700;color:var(--brand-800);
+  cursor:pointer;padding:8px 12px;font-size:12.5px;border-bottom:1px solid var(--line-strong);
+  user-select:none;transition:background .15s ease;box-shadow:inset 3px 0 0 var(--brand-500);
+}
+.task-table .group-header td:hover{background:var(--n-200);}
+.task-table .group-header .gh-ico{display:inline-block;width:14px;color:var(--brand-600);}
+.task-table .group-header .gh-count{color:var(--ink-4);font-weight:600;margin-left:6px;font-family:var(--font-mono);font-size:11px;}
+/* 看板分组 */
+.task-column-body .board-group{margin-bottom:8px;}
+.task-column-body .board-group-header{
+  display:flex;align-items:center;gap:6px;padding:6px 9px;margin-bottom:6px;
+  background:var(--surface-3);border-left:3px solid var(--brand-400);border-radius:var(--r-sm);
+  font-family:var(--font-ui);font-weight:650;color:var(--brand-800);font-size:12px;
+  cursor:pointer;user-select:none;transition:background .15s ease;
+}
+.task-column-body .board-group-header:hover{background:var(--n-200);}
+.task-column-body .board-group-header .gh-ico{display:inline-block;width:14px;color:var(--brand-600);}
+.task-column-body .board-group-header .gh-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.task-column-body .board-group-header .gh-count{color:var(--ink-4);font-weight:600;margin-left:auto;font-size:11px;font-family:var(--font-mono);}
+
+/* ==================== 里程碑（提醒中心页） ==================== */
+.rc-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.rc-card{
+  flex:1;min-width:150px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:15px 16px;cursor:pointer;transition:all .18s ease;
+  text-align:center;border-top:3px solid var(--line-strong);position:relative;overflow:hidden;
+}
+.rc-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--brand-line);}
+.rc-card .rc-num{font-size:27px;font-weight:700;font-family:var(--font-mono);line-height:1.15;letter-spacing:-.5px;color:var(--ink-2);}
+.rc-card .rc-label{font-size:11.5px;color:var(--ink-3);margin-top:4px;font-family:var(--font-ui);font-weight:600;letter-spacing:.2px;}
+.rc-card.rc-zero{cursor:default;opacity:.62;} .rc-card.rc-zero .rc-num{color:var(--ink-4);}
+.rc-card.rc-overdue{border-top-color:var(--danger);} .rc-card.rc-overdue .rc-num{color:var(--danger);}
+.rc-card.rc-due_today{border-top-color:var(--accent);} .rc-card.rc-due_today .rc-num{color:var(--accent-deep);}
+.rc-card.rc-due_soon{border-top-color:var(--brand-500);} .rc-card.rc-due_soon .rc-num{color:var(--brand-600);}
+.rc-card.rc-no_due{border-top-color:var(--n-400);} .rc-card.rc-no_due .rc-num{color:var(--ink-4);}
+.rc-toolbar{display:flex;align-items:center;gap:12px;}
+.rc-hint{font-size:11.5px;color:var(--ink-4);font-family:var(--font-mono);}
+.rc-section .rc-list{display:flex;flex-direction:column;gap:8px;}
+.rc-item{
+  display:flex;align-items:center;gap:12px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:10px 14px;cursor:pointer;transition:all .15s ease;
+  border-left:3px solid var(--n-300);
+}
+.rc-item:hover{border-color:var(--brand-line);border-left-color:var(--brand);background:var(--surface);box-shadow:var(--sh-md);transform:translateX(2px);}
+.rc-item-main{flex:1;min-width:0;}
+.rc-item-title{font-size:13px;font-weight:600;color:var(--ink);word-break:break-word;font-family:var(--font-ui);line-height:1.45;}
+.rc-item-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;align-items:center;}
+.rc-item-meta .tag{font-size:11px;padding:2px 8px;border-radius:var(--r-xs);border:1px solid var(--line);background:var(--surface-3);color:var(--ink-3);font-family:var(--font-ui);}
+.rc-item-meta .tag-project{background:var(--brand-pale);color:var(--brand-deep);border-color:var(--brand-line);font-weight:600;}
+.rc-item-meta .tag-priority-high{background:var(--warn-500);color:#fff;border-color:var(--warn-700);font-weight:700;}
+.rc-item-meta .tag-priority-medium{background:var(--surface-3);color:var(--ink-3);border-color:var(--line-strong);font-weight:600;}
+.rc-item-meta .tag-priority-low{background:transparent;color:var(--n-500);border-color:var(--line-strong);font-weight:500;}
+.rc-when{font-size:11px;color:var(--brand-700);background:var(--brand-pale);border:1px solid var(--brand-line);padding:2px 8px;border-radius:var(--r-xs);font-family:var(--font-mono);}
+.rc-when.rc-late{background:var(--danger-pale);color:var(--danger-deep);border-color:var(--danger-line);}
+
+/* ==================== 报表中心 ==================== */
+.report-cards{display:flex;gap:13px;flex-wrap:wrap;}
+.report-card{
+  flex:1;min-width:120px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:16px 18px;text-align:center;box-shadow:var(--sh-xs);transition:all .18s ease;border-top:3px solid var(--brand-500);
+}
+.report-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);}
+.report-card .rc-num{font-family:var(--font-mono);font-size:29px;font-weight:700;color:var(--brand-600);line-height:1.1;letter-spacing:-.5px;}
+.report-card .rc-label{font-size:11.5px;color:var(--ink-3);margin-top:6px;font-family:var(--font-ui);font-weight:600;}
+.report-card.rc-jade,.report-card.rc-jade .rc-num{border-top-color:var(--n-400);}
+.report-card.rc-jade .rc-num{color:var(--ink-3);}
+.report-card.rc-gold{border-top-color:var(--danger-500);}
+.report-card.rc-gold,.report-card.rc-gold .rc-num{border-top-color:var(--danger-500);}
+.report-card.rc-gold .rc-num{color:var(--danger);}
+.export-toolbar{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:14px;
+  padding:11px 13px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);
+}
+.export-toolbar .et-label{font-family:var(--font-ui);font-size:12.5px;color:var(--ink-3);font-weight:700;}
+.export-toolbar .et-date,.export-toolbar select.et-date,.export-toolbar select{
+  padding:5px 9px;border:1px solid var(--line-strong);border-radius:var(--r-sm);font-size:12px;
+  font-family:var(--font-ui);background:var(--surface);color:var(--ink-2);transition:all .16s ease;cursor:pointer;
+}
+.export-toolbar .et-date:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+.export-toolbar .et-sep{color:var(--ink-4);font-size:12px;}
+.chronicle-list{display:flex;flex-direction:column;}
+.chronicle-item{padding:10px 0;border-bottom:1px solid var(--line-2);}
+.chronicle-item:last-child{border-bottom:none;}
+.chronicle-item .ci-head{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--ink-4);font-family:var(--font-ui);}
+.chronicle-item .ci-cat{
+  background:var(--brand-pale);padding:2px 8px;border-radius:var(--r-xs);color:var(--brand-800);
+  font-weight:700;font-family:var(--font-mono);font-size:11px;border:1px solid var(--brand-line);
+}
+.chronicle-item .ci-content{font-size:13px;color:var(--ink-2);margin-top:4px;white-space:pre-wrap;word-break:break-word;font-family:var(--font-body);cursor:pointer;line-height:1.55;}
+.chronicle-item .ci-content:hover{color:var(--brand);}
+.chronicle-item .ci-actions{margin-top:4px;text-align:right;}
+.chronicle-item textarea{width:100%;min-height:50px;padding:7px 10px;border:1px solid var(--line-strong);border-radius:var(--r-sm);font-size:13px;font-family:var(--font-body);resize:vertical;margin-top:4px;box-sizing:border-box;transition:all .16s ease;}
+.chronicle-item textarea:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+.report-bars{display:flex;flex-direction:column;gap:10px;}
+.rb-row{display:flex;flex-direction:column;gap:4px;}
+.rb-top{display:flex;justify-content:space-between;font-size:12.5px;font-family:var(--font-ui);}
+.rb-top .rb-name{font-weight:600;color:var(--ink-2);}
+.rb-top .rb-val{color:var(--ink-3);font-family:var(--font-mono);font-size:11.5px;}
+.rb-track{height:8px;background:var(--surface-3);border-radius:5px;overflow:hidden;border:1px solid var(--line-2);}
+.rb-fill{height:100%;background:linear-gradient(90deg,var(--brand-400),var(--brand-600));border-radius:5px;transition:width .4s ease;}
+
+/* ==================== 便利贴 ==================== */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:15px;align-content:start;}
+.notes-grid .note-card{width:100%;min-height:108px;font-size:13px;}
+.notes-composer{display:flex;gap:9px;margin-bottom:18px;align-items:stretch;}
+.notes-composer textarea{
+  flex:1;min-height:46px;padding:9px 12px;border:1px solid var(--line-strong);border-radius:var(--r-md);
+  font-size:13px;font-family:var(--font-body);background:var(--surface);color:var(--ink);resize:vertical;transition:all .16s ease;
+}
+.notes-composer textarea:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+.notes-composer select{flex:0 0 auto;padding:9px 10px;border:1px solid var(--line-strong);border-radius:var(--r-md);font-size:12.5px;font-family:var(--font-ui);background:var(--surface);color:var(--ink-2);cursor:pointer;}
+.notes-composer select:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+.note-card{
+  position:relative;width:100%;min-height:74px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-md);padding:18px 11px 24px;font-size:12.5px;line-height:1.55;color:var(--ink-2);
+  box-shadow:var(--sh-sm);font-family:var(--font-body);word-break:break-word;cursor:pointer;
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  overflow:hidden;
+}
+/* 便利贴：纸色三阶，用顶部色条代替胶带（更科技） */
+.note-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand-500);opacity:.85;}
+.note-card:nth-child(3n){background:var(--surface-2);} .note-card:nth-child(3n)::before{background:var(--accent-500);}
+.note-card:nth-child(3n+1){background:var(--surface-2);} .note-card:nth-child(3n+1)::before{background:var(--brand-400);}
+.note-card:nth-child(4n){background:var(--surface);}
+.note-card:nth-child(4n)::before{background:linear-gradient(90deg,var(--brand-500),var(--accent-500));}
+.note-card:hover{transform:translateY(-3px);box-shadow:var(--sh-lg);border-color:var(--brand-line);z-index:2;}
+.note-card .note-cat{
+  position:absolute;top:8px;left:10px;font-size:9.5px;font-weight:700;font-family:var(--font-ui);
+  color:var(--brand-800);background:var(--brand-pale);border:1px solid var(--brand-line);
+  padding:1px 6px;border-radius:var(--r-xs);letter-spacing:.6px;
+}
+.note-card .note-content{margin-top:12px;white-space:pre-wrap;}
+.note-card .note-del{
+  position:absolute;bottom:5px;right:8px;border:none;background:none;color:var(--ink-4);
+  cursor:pointer;font-size:13px;line-height:1;opacity:0;transition:all .15s ease;padding:2px 4px;border-radius:var(--r-xs);
+}
+.note-card:hover .note-del{opacity:1;}
+.note-card .note-del:hover{color:var(--danger);background:var(--danger-pale);}
+.note-edit{width:100%;min-height:54px;border:none;background:transparent;resize:vertical;font-size:12.5px;line-height:1.55;font-family:var(--font-body);color:var(--ink-2);margin-top:12px;}
+.note-edit:focus{outline:none;}
+.note-empty{font-size:13px;color:var(--ink-4);text-align:center;padding:28px 10px;width:100%;grid-column:1 / -1;}
+
+/* ==================== 项目填报 ==================== */
+.project-link-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-2);}
+.project-link-item:last-child{border-bottom:none;}
+.project-link-item .link-info{flex:1;min-width:0;}
+.project-link-item .link-info .project-name{font-weight:600;font-size:13px;color:var(--ink);font-family:var(--font-ui);}
+.project-link-item .link-info a{display:block;font-size:11.5px;color:var(--brand);text-decoration:none;word-break:break-all;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);margin-top:2px;}
+.project-link-item .link-info a:hover{text-decoration:underline;}
+.project-link-item .link-actions{display:flex;gap:5px;flex-shrink:0;margin-left:10px;}
+.add-project-link-form{display:flex;gap:7px;margin-top:10px;}
+.add-project-link-form input,.add-project-link-form textarea{
+  flex:1;padding:8px 11px;border:1px solid var(--line-strong);border-radius:var(--r-md);
+  font-size:12.5px;font-family:var(--font-ui);min-width:0;background:var(--surface);color:var(--ink);transition:all .16s ease;
+}
+.add-project-link-form input:focus,.add-project-link-form textarea:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+
+/* ==================== 模态框（全站唯一族） ==================== */
+.modal-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(15,23,42,.46);backdrop-filter:blur(3px);
+  z-index:1000;justify-content:center;align-items:center;
+}
+.modal-overlay.active{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);
+  padding:24px;width:520px;max-width:92vw;max-height:86vh;overflow-y:auto;
+  box-shadow:var(--sh-xl);font-family:var(--font-body);
+  position:relative;
+}
+/* 顶部渐变光条：科技感弹窗标识 */
+.modal::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-xl) var(--r-xl) 0 0;
+  background:linear-gradient(90deg,var(--brand-500),var(--accent-500));
+}
+.modal h3{font-family:var(--font-title);font-size:16.5px;font-weight:650;color:var(--ink);margin-bottom:18px;letter-spacing:.3px;}
+.modal .form-group{margin-bottom:13px;}
+.modal .form-group label{display:block;font-size:12.5px;font-weight:650;margin-bottom:5px;color:var(--ink-2);font-family:var(--font-ui);letter-spacing:.2px;}
+.modal .form-group input,.modal .form-group select,.modal .form-group textarea{
+  width:100%;padding:9px 12px;border:1px solid var(--line-strong);border-radius:var(--r-md);
+  font-size:13.5px;font-family:var(--font-ui);background:var(--surface);color:var(--ink);transition:all .16s ease;
+}
+.modal .form-group input:focus,.modal .form-group select:focus,.modal .form-group textarea:focus{
+  outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);
+}
+.modal .form-group textarea{min-height:80px;resize:vertical;font-family:var(--font-body);}
+.modal .form-row{display:flex;gap:12px;}
+.modal .form-row .form-group{flex:1;min-width:0;}
+.modal .modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line-2);}
+.modal .modal-actions .btn{padding:9px 22px;}
+.completion-modal{display:none;}
+.completion-modal.active{display:flex;}
+.completion-modal .modal{width:450px;}
+.completion-modal .modal::before{background:linear-gradient(90deg,var(--ok-500),var(--accent-500));}
+.completion-modal .modal textarea{width:100%;min-height:84px;padding:9px 12px;border:1px solid var(--line-strong);border-radius:var(--r-md);font-size:13.5px;resize:vertical;font-family:var(--font-body);background:var(--surface);color:var(--ink);transition:all .16s ease;}
+.completion-modal .modal textarea:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+.completion-modal .form-row{display:flex;gap:12px;margin-bottom:13px;}
+.completion-modal .form-row .form-group{flex:1;}
+.completion-modal .form-group label{display:block;font-size:12.5px;font-weight:650;margin-bottom:5px;color:var(--ink-2);font-family:var(--font-ui);}
+.completion-modal .form-group input{width:100%;padding:9px 12px;border:1px solid var(--line-strong);border-radius:var(--r-md);font-size:13.5px;font-family:var(--font-ui);background:var(--surface);color:var(--ink);transition:all .16s ease;}
+.completion-modal .form-group input:focus{outline:none;border-color:var(--brand-400);box-shadow:var(--sh-focus);}
+
+/* ==================== 进展记录 ==================== */
+.tp-badge{font-size:10.5px;padding:1px 7px;border-radius:var(--r-xs);font-family:var(--font-ui);font-weight:650;letter-spacing:.2px;flex-shrink:0;}
+.tp-feedback{background:var(--brand-pale);color:var(--brand-deep);border:1px solid var(--brand-line);}
+.tp-change{background:var(--surface-3);color:var(--ink-3);border:1px solid var(--line);}
+.tp-milestone{background:var(--accent-pale);color:var(--accent-deep);border:1px solid var(--accent-line);}
+.tp-risk{background:var(--danger-pale);color:var(--danger-deep);border:1px solid var(--danger-line);}
+.tp-other{background:var(--surface-3);color:var(--ink-3);border:1px solid var(--line);}
+.tp-item{display:block;}
+.tp-item .tp-content{font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--ink-2);}
+
+/* ==================== 任务摘要 ==================== */
+.task-summary-box{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-md);padding:9px 11px;margin-bottom:4px;font-family:var(--font-ui);}
+.task-summary-box .ts-group{margin-bottom:6px;}
+.task-summary-box .ts-group:last-child{margin-bottom:0;}
+.task-summary-box .ts-title{font-size:11px;font-weight:700;color:var(--brand-700);letter-spacing:.8px;margin-bottom:3px;font-family:var(--font-title);}
+.task-summary-box .ts-item{font-size:12px;color:var(--ink-2);padding:2px 0 2px 14px;position:relative;line-height:1.5;word-break:break-word;}
+.task-summary-box .ts-item::before{content:"";position:absolute;left:3px;top:9px;width:4px;height:4px;border-radius:50%;background:var(--brand-400);}
+.task-summary-box .ts-item .ts-proj{color:var(--brand-800);font-weight:600;}
+.task-summary-box .ts-item .ts-note{color:var(--ink-3);font-size:11.5px;display:block;margin-top:1px;font-family:var(--font-body);}
+.task-summary-box .ts-empty{font-size:12px;color:var(--ink-4);text-align:center;padding:6px;}
+
+/* ==================== 动效 ==================== */
+@keyframes riseIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+@keyframes popIn{from{opacity:0;transform:translateY(-8px) scale(.97);}to{opacity:1;transform:none;}}
+@keyframes modalPop{from{opacity:0;transform:translateY(10px) scale(.98);}to{opacity:1;transform:none;}}
+.modal-overlay.active .modal,.completion-modal.active .modal{animation:modalPop .24s cubic-bezier(.2,.9,.3,1.05) both;}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width:900px){
+  :root{--header-h:auto;}
+  .header{height:auto;flex-wrap:wrap;gap:10px;padding:12px 16px;}
+  .layout{flex-direction:column;height:auto;}
+  .sidebar{flex-direction:row;width:100%;overflow-x:auto;border-right:none;border-bottom:1px solid rgba(37,99,235,.30);padding:10px;gap:6px;}
+  .sidebar .nav-title{display:none;}
+  .sidebar .nav-spacer{display:none;}
+  .nav-btn{flex:0 0 auto;width:auto;white-space:nowrap;padding:9px 13px;}
+  .content{overflow:visible;}
+  .view.active{height:auto;overflow:visible;padding:14px;}
+  .panel-page{overflow:visible;}
+  .task-board{flex-direction:column;}
+  .task-table{min-width:640px;}
+  .modal{width:94vw;padding:18px;}
+}
+/* ==================== 事项类型（时间语义）：节律 / 承诺 / 计划 ==================== */
+.kind-picker{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+.kind-opt{
+  display:flex;flex-direction:column;gap:3px;align-items:flex-start;
+  padding:9px 11px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface-2);cursor:pointer;text-align:left;font-family:var(--font-ui);
+  transition:border-color .15s ease,background .15s ease,box-shadow .15s ease;
+}
+.kind-opt:hover{border-color:var(--brand-line);background:var(--surface);}
+.kind-opt.active{border-color:var(--brand);background:var(--brand-pale);box-shadow:0 0 0 2px var(--brand-100);}
+.kind-opt .ko-name{font-size:13px;font-weight:650;color:var(--ink);line-height:1.2;}
+.kind-opt.active .ko-name{color:var(--brand-deep);}
+.kind-opt .ko-desc{font-size:11px;color:var(--ink-4);line-height:1.2;}
+.kind-hint{margin-top:7px;font-size:11.5px;color:var(--ink-4);line-height:1.55;}
+
+.tag.rc-kind{font-weight:650;letter-spacing:.2px;}
+.tag.rc-kind-routine{background:var(--brand-pale);color:var(--brand-deep);border-color:var(--brand-line);}
+.tag.rc-kind-commit{background:var(--danger-pale);color:var(--danger-deep);border-color:var(--danger-line);}
+.tag.rc-kind-plan{background:var(--warn-100);color:var(--warn-700);border-color:#fcd9a1;}
+.tag.tag-deliverable{background:var(--surface-3);color:var(--ink-2);border-color:var(--line);}
+.tag.tag-repeat{background:var(--accent-pale);color:var(--accent-deep);border-color:var(--accent-line);}
+
+/* 里程碑条目：左侧色条按类型区分（节律蓝 / 承诺红 / 计划琥珀） */
+.rc-item-routine{border-left-color:var(--brand);}
+.rc-item-commit{border-left-color:var(--danger);}
+.rc-item-commit:hover{border-left-color:var(--danger);}
+.rc-item-plan{border-left-color:var(--warn-500);}
+.rc-item-plan:hover{border-left-color:var(--warn-500);}
+.rc-item.rc-over{background:var(--danger-pale);border-color:var(--danger-line);border-left-color:var(--danger);}
+.rc-item-meta.rc-meta-2{gap:9px;margin-top:6px;}
+.rc-stage{font-family:var(--font-ui);font-size:11.5px;color:var(--ink-3);}
+.rc-node{font-family:var(--font-ui);font-size:11.5px;font-weight:650;color:var(--brand-deep);}
+
+/* 计划节点（子任务） */
+.subtask-add{display:flex;gap:8px;align-items:stretch;}
+.subtask-add input[type="text"]{flex:1;min-width:0;}
+.subtask-add input[type="date"]{flex:0 0 150px;}
+.subtask-row{
+  display:flex;align-items:center;gap:9px;padding:7px 10px;margin-bottom:6px;
+  border:1px solid var(--line-2);border-radius:var(--r-sm);background:var(--surface-2);
+}
+.subtask-row.done{opacity:.7;}
+.subtask-row .st-check{
+  width:20px;height:20px;flex:0 0 20px;padding:0;border-radius:50%;
+  border:1px solid var(--line-strong);background:var(--surface);color:#fff;
+  font-size:11px;font-weight:700;line-height:1;cursor:pointer;
+}
+.subtask-row.done .st-check{background:var(--brand);border-color:var(--brand);}
+.subtask-row .st-title{flex:1;min-width:0;font-size:13px;color:var(--ink);font-family:var(--font-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.subtask-row.done .st-title{text-decoration:line-through;color:var(--ink-4);}
+.subtask-row .st-date{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums;}
+.subtask-row .st-del{border:0;background:transparent;color:var(--ink-4);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:var(--r-xs);font-family:var(--font-ui);}
+.subtask-row .st-del:hover{background:var(--danger-pale);color:var(--danger);}
+
+/* 里程碑计数卡：新增分组键配色 */
+.rc-card.rc-today{border-top-color:var(--accent);}
+.rc-card.rc-today .rc-num{color:var(--accent-deep);}
+.rc-card.rc-week{border-top-color:var(--brand-500);}
+.rc-card.rc-week .rc-num{color:var(--brand-600);}
+.rc-card.rc-unscheduled{border-top-color:var(--n-400);}
+.rc-card.rc-unscheduled .rc-num{color:var(--ink-4);}
+</style>
+</head>
+<body>
+    <!-- ======== 头部 ======== -->
+    <div class="header">
+        <h1>📋 个人工作台</h1>
+        <div class="header-actions">
+            <input type="text" id="searchInput" placeholder="🔍 搜索任务..." oninput="onHeaderSearchInput(this.value)">
+            <button class="btn btn-ghost bell-btn" id="btnReminders" onclick="toggleReminders()" title="任务提醒">🔔<span class="bell-badge" id="bellBadge" style="display:none;">0</span></button>
+            <button class="btn btn-ghost" onclick="exportData()">📤 导出</button>
+            <button class="btn btn-ghost" onclick="backupNow()">💾 备份</button>
+            <button class="btn btn-white" onclick="switchView('board');showAddTaskModal()">+ 新任务</button>
+        </div>
+    </div>
+    <!-- 提醒中心下拉面板（固定于头部下方右侧） -->
+    <div class="remind-panel" id="remindPanel" style="display:none;"></div>
+
+    <!-- ======== 主体布局：侧边栏 + 多视图 ======== -->
+    <div class="layout">
+        <!-- 侧边栏导航 -->
+        <div class="sidebar">
+            <div class="nav-title">导 航</div>
+            <button class="nav-btn active" data-view="board" onclick="switchView('board')"><span class="nav-ico">📌</span>任务看板</button>
+            <button class="nav-btn" data-view="reminders" onclick="switchView('reminders')"><span class="nav-ico">🎯</span>里程碑</button>
+            <button class="nav-btn" data-view="reports" onclick="switchView('reports')"><span class="nav-ico">📊</span>报表中心</button>
+            <button class="nav-btn" data-view="notes" onclick="switchView('notes')"><span class="nav-ico">🗒️</span>便利贴</button>
+            <button class="nav-btn" data-view="links" onclick="switchView('links')"><span class="nav-ico">⏱️</span>项目填报</button>
+            <div class="nav-spacer"></div>
+            <button class="nav-btn exit-btn" onclick="exitApp()"><span class="nav-ico">⏻</span>退出程序</button>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="content">
+            <!-- 视图一：任务看板 -->
+            <div class="view active" id="view-board">
+                <div class="tasks-section">
+                    <h2>📌 任务看板</h2>
+                    <div class="board-toolbar" id="boardToolbar">
+                        <div class="board-mode-toggle">
+                            <button id="modeCard" class="active" onclick="switchBoardMode('card')">▤ 卡片</button>
+                            <button id="modeTable" onclick="switchBoardMode('table')">▦ 表格</button>
+                        </div>
+                        <div class="board-density-toggle" id="densityToggle">
+                            <button id="denStd" class="bdt-btn active" onclick="switchDensity('standard')">标准</button>
+                            <button id="denCompact" class="bdt-btn" onclick="switchDensity('compact')">紧凑</button>
+                        </div>
+                        <div class="board-density-toggle" id="sortToggle">
+                            <button id="bsmUrgency" class="bdt-btn active" onclick="switchBoardSort('urgency')" title="逾期 → 今天到期 → 高优先级 → 三天内 → 其余">🌡 紧急优先</button>
+                            <button id="bsmPriority" class="bdt-btn" onclick="switchBoardSort('priority')" title="高 → 中 → 低，同档按截止日升序">▲ 优先级</button>
+                            <button id="bsmDue" class="bdt-btn" onclick="switchBoardSort('due')" title="按截止日升序，无截止日的沉底">📅 截止</button>
+                            <button id="bsmUpdated" class="bdt-btn" onclick="switchBoardSort('updated')" title="按最近更新时间倒序">🕒 更新</button>
+                        </div>
+                        <span class="board-stat" id="boardStat"></span>
+                        <span class="board-search-hit" id="boardSearchHit"></span>
+                        <div class="board-search-wrap" id="boardSearchWrap">
+                            <svg class="bs-ico" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.7"></circle>
+                                <path d="M10.7 10.7L14 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+                            </svg>
+                            <input type="text" class="board-search-input" id="boardSearchInput"
+                                   placeholder="搜索任务、项目、备注…"
+                                   autocomplete="off" spellcheck="false"
+                                   oninput="onBoardSearchInput(this.value)"
+                                   onkeydown="onBoardSearchKeydown(event)">
+                            <button class="board-search-clear" id="boardSearchClear" type="button"
+                                    title="清空检索 (Esc)" onclick="clearBoardSearch()">✕</button>
+                        </div>
+                    </div>
+                    <div class="task-table-filter" id="boardFilterBar" style="margin-bottom:10px;">
+                        <span class="ttf-label">筛选</span>
+                        <select id="bfStatus" onchange="onBoardFilter()">
+                            <option value="">全部状态</option>
+                            <option value="todo">待办</option>
+                            <option value="in_progress">进行中</option>
+                            <option value="done">已完成</option>
+                        </select>
+                        <select id="bfProject" onchange="onBoardFilter()"><option value="">全部项目</option></select>
+                        <label class="ttf-check"><input type="checkbox" id="bfOverdue" onchange="onBoardFilter()">仅看逾期</label>
+                        <button id="btnBoardGroupBy" class="btn btn-sm" style="background:var(--paper-deep);color:var(--ink-soft);border-color:var(--line);" onclick="toggleBoardGroupBy()">▦ 看板按项目分组</button>
+                        <button id="btnBoardGroupAll" class="btn btn-sm" style="display:none;background:var(--seal-pale);color:var(--seal-deep);border-color:var(--seal-line);" onclick="toggleBoardGroupAll()">▴ 全部折叠</button>
+                        <span class="ttf-count" id="bfCount"></span>
+                    </div>
+                    <div class="task-board" id="taskBoard">
+                        <!-- 待办列 -->
+                        <div class="task-column" data-status="todo">
+                            <div class="task-column-header">
+                                <span>📋 待办</span>
+                                <span class="count" id="todoCount">0</span>
+                            </div>
+                            <div class="task-column-body" id="todoTasks"></div>
+                            <button class="add-task-btn" onclick="showAddTaskModal('todo')">+ 添加任务</button>
+                        </div>
+                        
+                        <!-- 进行中列 -->
+                        <div class="task-column" data-status="in_progress">
+                            <div class="task-column-header">
+                                <span>⏳ 进行中</span>
+                                <span class="count" id="inProgressCount">0</span>
+                            </div>
+                            <div class="task-column-body" id="inProgressTasks"></div>
+                            <button class="add-task-btn" onclick="showAddTaskModal('in_progress')">+ 添加任务</button>
+                        </div>
+                        
+                        <!-- 已完成列 -->
+                        <div class="task-column" data-status="done">
+                            <div class="task-column-header">
+                                <span>✅ 已完成</span>
+                                <span class="count" id="doneCount">0</span>
+                            </div>
+                            <div class="task-column-body" id="doneTasks"></div>
+                        </div>
+                    </div>
+                    <!-- 表格模式 -->
+                    <div class="task-table-wrap" id="taskTableWrap" style="display:none;">
+                        <div class="task-table-filter">
+                            <span class="ttf-label">筛选</span>
+                            <select id="tfStatus" onchange="onTableFilter()">
+                                <option value="">全部状态</option>
+                                <option value="todo">待办</option>
+                                <option value="in_progress">进行中</option>
+                                <option value="done">已完成</option>
+                            </select>
+                            <select id="tfProject" onchange="onTableFilter()"><option value="">全部项目</option></select>
+                            <label class="ttf-check"><input type="checkbox" id="tfOverdue" onchange="onTableFilter()">仅看逾期</label>
+                            <button class="btn btn-sm" style="background:var(--paper-deep);color:var(--ink-soft);border-color:var(--line);" onclick="exportTableCSV()">⬇ 导出CSV</button>
+                            <button id="btnGroupBy" class="btn btn-sm" style="background:var(--paper-deep);color:var(--ink-soft);border-color:var(--line);" onclick="toggleGroupBy()">▦ 按项目分组</button>
+                            <button id="btnGroupAll" class="btn btn-sm" style="display:none;background:var(--seal-pale);color:var(--seal-deep);border-color:var(--seal-line);" onclick="toggleGroupAll()">▴ 全部折叠</button>
+                            <span class="ttf-count" id="tfCount"></span>
+                        </div>
+                        <div class="task-table-batch" id="batchBar" style="display:none;">
+                            <span class="ttb-info">已选 <b id="batchCount">0</b> 项</span>
+                            <button class="btn btn-success btn-sm" onclick="batchSetStatus('done')">批量完成</button>
+                            <button class="btn btn-sm" style="background:var(--seal-pale);color:var(--seal-deep);border-color:var(--seal-line);" onclick="batchSetStatus('in_progress')">批量进行中</button>
+                            <button class="btn btn-sm" style="background:#ffffff;color:var(--ink-soft);border-color:var(--line);" onclick="batchSetStatus('todo')">批量待办</button>
+                            <select id="batchPriority" style="padding:4px 8px;border:1px solid var(--line);border-radius:4px;font-size:12px;font-family:var(--font-ui);background:#ffffff;color:var(--ink);">
+                                <option value="">改优先级…</option>
+                                <option value="high">高</option>
+                                <option value="medium">中</option>
+                                <option value="low">低</option>
+                            </select>
+                            <button class="btn btn-sm" style="background:var(--seal-pale);color:var(--seal-deep);border-color:var(--seal-line);" onclick="batchSetPriority()">应用</button>
+                            <button class="btn btn-danger btn-sm" onclick="batchDelete()">删除选中</button>
+                            <button class="btn btn-sm" style="background:var(--surface-3);color:var(--ink-3);" onclick="clearSelection()">取消选择</button>
+                        </div>
+                        <div class="task-table-scroll">
+                        <table class="task-table" id="taskTable">
+                            <thead>
+                                <tr>
+                                    <th class="no-sort col-check"><input type="checkbox" id="tfCheckAll" title="全选当前结果" onclick="onToggleCheckAll(this)"></th>
+                                    <th data-sort="status" class="sorted-asc">状态<span class="sort-ico">▲</span></th>
+                                    <th data-sort="title">标题<span class="sort-ico">⇅</span></th>
+                                    <th data-sort="project">项目/客户<span class="sort-ico">⇅</span></th>
+                                    <th data-sort="priority">优先级<span class="sort-ico">⇅</span></th>
+                                    <th data-sort="due_date">截止<span class="sort-ico">⇅</span></th>
+                                    <th data-sort="progress">进展<span class="sort-ico">⇅</span></th>
+                                    <th class="no-sort">备注 / 链接</th>
+                                    <th class="no-sort cell-actions">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskTableBody"></tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 视图二：提醒中心 -->
+            <div class="view" id="view-reminders">
+                <div class="panel-page">
+                    <!-- 概览统计 -->
+                    <section class="panel">
+                        <h3>🎯 里程碑 <span style="font-size:12px;font-weight:400;color:var(--ink-4);">按时间轴看全 · 节律 / 承诺 / 计划 三类分开提醒</span></h3>
+                        <div class="rc-stats" id="rcStats"></div>
+                        <div class="rc-toolbar">
+                            <button class="btn btn-sm btn-primary" onclick="loadReminderPage(true)">↻ 立即刷新</button>
+                            <span class="rc-hint" id="rcHint"></span>
+                        </div>
+                    </section>
+                    <div id="rcSections"></div>
+                </div>
+            </div>
+
+            <!-- 视图二：报表中心 -->
+            <div class="view" id="view-reports">
+                <div class="panel-page">
+                    <!-- 概览卡片 -->
+                    <section class="panel">
+                        <h3>📊 报表中心 <span style="font-size:12px;font-weight:400;color:var(--ink-4);">多项目并行 · 数据驱动</span></h3>
+                        <div class="report-cards" id="reportCards"></div>
+                    </section>
+
+                    <!-- 每日流水账 -->
+                    <section class="panel">
+                        <h3>📝 每日流水账 <span style="font-size:12px;font-weight:400;color:var(--ink-4);">进展记录 + 任务动态自动聚合 · 供述职/复盘数据源</span></h3>
+                        <div class="export-toolbar">
+                            <span class="et-label">📤 导出：</span>
+                            <select id="reportPeriod" class="et-date">
+                                <option value="">当前季度</option>
+                                <option value="2026-Q1">2026 Q1</option>
+                                <option value="2026-Q2">2026 Q2</option>
+                                <option value="2026-Q3">2026 Q3</option>
+                                <option value="2026-Q4">2026 Q4</option>
+                                <option value="2026">2026 年度</option>
+                            </select>
+                            <button class="btn btn-primary btn-sm" onclick="exportReport()">述职 Markdown（含流水账）</button>
+                        </div>
+                        <div id="dailyLedger" class="chronicle-list"></div>
+                    </section>
+
+                    <!-- 项目/状态分布 -->
+                    <section class="panel">
+                        <h3>🏦 按项目(客户)分布</h3>
+                        <div id="byProject" class="report-bars"></div>
+                        <h3 style="margin-top:18px;">📈 状态 / 优先级分布</h3>
+                        <div id="byStatus" class="report-bars"></div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- 视图三：便利贴 -->
+            <div class="view" id="view-notes">
+                <div class="panel-page">
+                    <section class="panel">
+                        <h3>🗒️ 便利贴 <span style="font-size:12px;font-weight:400;color:var(--ink-4);">联系人 · 流程 · 备忘</span></h3>
+                        <div class="notes-composer">
+                            <select id="newNoteCategory">
+                                <option value="联系人">联系人</option>
+                                <option value="流程">流程</option>
+                                <option value="其他" selected>其他</option>
+                            </select>
+                            <textarea id="newNote" placeholder="随手记：联系人/流程/备忘...（Ctrl+Enter 贴一张）"></textarea>
+                            <button class="btn btn-primary" onclick="addNote()">贴一张</button>
+                        </div>
+                        <div id="noteList" class="notes-grid"></div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- 视图四：项目工时填报 -->
+            <div class="view" id="view-links">
+                <div class="panel-page">
+                    <section class="panel">
+                        <h3>⏱️ 项目工时填报</h3>
+                        <div id="projectLinkList"></div>
+                        <div class="add-project-link-form" style="margin-top:12px;">
+                            <input type="text" id="newProjectName" placeholder="项目名称" style="flex:1">
+                            <input type="text" id="newProjectUrl" placeholder="填报URL" style="flex:1">
+                            <button class="btn btn-primary btn-sm" onclick="addProjectLink()">添加</button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 模态框：任务编辑 ======== -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <h3 id="taskModalTitle">新任务</h3>
+            <input type="hidden" id="editTaskId" value="">
+            
+            <div class="form-group">
+                <label>任务标题 *</label>
+                <input type="text" id="taskTitle" placeholder="输入任务标题">
+            </div>
+            <div class="form-group">
+                <label>事项类型 <span style="font-weight:400;color:var(--ink-4);">决定提醒节奏与逾期处理方式</span></label>
+                <div class="kind-picker" id="taskKindPicker">
+                    <button type="button" class="kind-opt" data-kind="task" onclick="pickKind('task')">
+                        <span class="ko-name">普通任务</span><span class="ko-desc">一次性待办</span>
+                    </button>
+                    <button type="button" class="kind-opt" data-kind="routine" onclick="pickKind('routine')">
+                        <span class="ko-name">节律</span><span class="ko-desc">巡检 / 例行</span>
+                    </button>
+                    <button type="button" class="kind-opt" data-kind="commit" onclick="pickKind('commit')">
+                        <span class="ko-name">承诺</span><span class="ko-desc">客户死线</span>
+                    </button>
+                    <button type="button" class="kind-opt" data-kind="plan" onclick="pickKind('plan')">
+                        <span class="ko-name">计划</span><span class="ko-desc">研发排期</span>
+                    </button>
+                </div>
+                <input type="hidden" id="taskKind" value="task">
+                <div class="kind-hint" id="taskKindHint"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="taskStatus">
+                        <option value="todo">待办</option>
+                        <option value="in_progress">进行中</option>
+                        <option value="done">已完成</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>优先级</label>
+                    <select id="taskPriority">
+                        <option value="high">🔴 高</option>
+                        <option value="medium" selected>🟡 中</option>
+                        <option value="low">🟢 低</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>项目/客户</label>
+                    <input type="text" id="taskProject" placeholder="如：腾讯会议">
+                </div>
+                <div class="form-group">
+                    <label id="taskDueLabel">截止日期</label>
+                    <input type="date" id="taskDueDate">
+                </div>
+            </div>
+            <div class="form-group" id="taskDeliverableBox" style="display:none;">
+                <label>交付物 <span style="font-weight:400;color:var(--ink-4);">如：巡检报告</span></label>
+                <input type="text" id="taskDeliverable" placeholder="本期要交给客户的东西">
+            </div>
+            <div class="form-group">
+                <label>关联链接（可选，不填则纯文字任务）</label>
+                <input type="url" id="taskLink" placeholder="工单链接 URL，如 https://example.com/...">
+            </div>
+            <div class="form-group">
+                <label>描述（可选）</label>
+                <textarea id="taskDesc" placeholder="任务详细描述..."></textarea>
+            </div>
+            <div class="form-group" id="completionNoteBox" style="display:none;">
+                <label>✅ 完成原因</label>
+                <div id="completionNoteView" style="font-size:13px;color:var(--ink-soft);background:var(--paper-deep);border:1px solid var(--line-soft);border-radius:5px;padding:8px 10px;white-space:pre-wrap;word-break:break-word;font-family:var(--font-body);"></div>
+            </div>
+            <div class="form-group" id="subtaskBox" style="display:none;border-top:1px dashed var(--line);padding-top:14px;">
+                <label>🧩 计划节点 <span id="subtaskCount" style="font-weight:400;color:var(--ink-4);"></span></label>
+                <div id="subtaskList" style="max-height:170px;overflow-y:auto;margin-bottom:10px;"></div>
+                <div class="subtask-add">
+                    <input type="text" id="subtaskTitle" placeholder="节点名称，如：联调完成">
+                    <input type="date" id="subtaskDate">
+                    <button class="btn btn-primary btn-sm" onclick="addSubtask()">+ 添加节点</button>
+                </div>
+                <div class="kind-hint">节点完成后自动推进；计划日变更请补一条「方案变更」进展，滑期即可追溯</div>
+            </div>
+            <div class="form-group" style="border-top:1px dashed var(--line);padding-top:14px;">
+                <label>📈 进展记录 <span id="progressCount" style="font-weight:400;color:var(--ink-4);"></span></label>
+                <div id="progressList" style="max-height:170px;overflow-y:auto;margin-bottom:10px;"></div>
+                <div style="display:flex;gap:8px;align-items:stretch;">
+                    <select id="progressType" style="flex:0 0 110px;padding:8px 10px;border:1px solid var(--line);border-radius:5px;font-size:13px;font-family:var(--font-ui);background:#ffffff;color:var(--ink);box-sizing:border-box;min-height:44px;">
+                        <option value="研发反馈">研发反馈</option>
+                        <option value="方案变更">方案变更</option>
+                        <option value="里程碑">里程碑</option>
+                        <option value="风险">风险</option>
+                        <option value="其他" selected>其他</option>
+                    </select>
+                    <textarea id="progressInput" placeholder="记录一条进展…（Ctrl+Enter 保存）" style="flex:1;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:5px;font-size:13px;font-family:var(--font-body);background:#ffffff;color:var(--ink);box-sizing:border-box;resize:vertical;"></textarea>
+                </div>
+                <div style="text-align:right;margin-top:6px;">
+                    <button class="btn btn-primary btn-sm" onclick="addProgress()">+ 添加进展</button>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>🔁 重复 <span style="font-weight:400;color:var(--ink-4);">完成后自动生成下一期</span></label>
+                    <select id="taskRepeatFreq" onchange="taskRepeatChange()">
+                        <option value="none">不重复</option>
+                        <option value="daily">每日</option>
+                        <option value="weekly">每周</option>
+                        <option value="monthly">每月</option>
+                        <option value="quarterly">每季度</option>
+                        <option value="yearly">每年</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>提前提醒（天）</label>
+                    <input type="number" id="taskRemindAdvance" min="0" max="30" value="0" placeholder="0" oninput="this.dataset.touched='1'">
+                </div>
+            </div>
+            <div class="form-group" id="taskRepeatDayBox" style="display:none;">
+                <label id="taskRepeatDayLabel">日期</label>
+                <select id="taskRepeatDay"></select>
+            </div>
+            <div class="form-group" id="taskRepeatMonthBox" style="display:none;">
+                <label>发生在几月</label>
+                <select id="taskRepeatMonth"></select>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="taskRecurring" checked>
+                    未完成时自动延续到第二天
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" style="background:var(--surface-3);color:var(--ink-3)" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveTask()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 模态框：批量完成 ============ -->
+    <div class="modal-overlay completion-modal" id="batchCompleteModal">
+        <div class="modal">
+            <h3>✅ 批量完成（<span id="batchDoneCount">0</span> 项）</h3>
+            <div class="form-group">
+                <label>完成原因 / 备注（应用于全部选中项）</label>
+                <textarea id="batchCompleteNote" placeholder="填写完成原因、产出或备注..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>完成日期</label>
+                    <input type="date" id="batchCompleteDate">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" style="background:var(--surface-3);color:var(--ink-3)" onclick="closeBatchCompleteModal()">取消</button>
+                <button class="btn btn-success" onclick="confirmBatchComplete()">确认完成</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== 模态框：完成原因 ============ -->
+    <div class="modal-overlay completion-modal" id="completionModal">
+        <div class="modal">
+            <h3>✅ 记录完成信息</h3>
+            <div class="form-group">
+                <label>完成原因 / 备注</label>
+                <textarea id="completionNote" placeholder="填写完成原因、产出或备注..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>完成日期</label>
+                    <input type="date" id="completionDate">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" style="background:var(--surface-3);color:var(--ink-3)" onclick="closeCompletionModal()">取消</button>
+                <button class="btn btn-success" onclick="confirmCompletion()">确认完成</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局状态 ====================
+        // 取本地日期（YYYY-MM-DD），避免 toISOString() 返回 UTC 导致跨时区日期偏移一天
+        function todayLocal() {
+            const d = new Date();
+            const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+            return local.toISOString().split('T')[0];
+        }
+        let currentDate = todayLocal();
+        let boardMode = 'card';                 // 'card' | 'table'
+        let tableSort = { key: 'status', dir: 'asc' };
+        let currentTasks = [];                  // 最近一次拉取的任务列表（供筛选/排序复用，避免重复请求）
+        let tableFilter = { status: '', project: '', overdue: false };
+        let selectedIds = new Set();             // 表格多选：被选中的任务 id
+        let groupByProject = false;              // 表格是否按「项目/客户」分组
+        let collapsedGroups = new Set();         // 已折叠的分组 key（空串表示未分类）
+        let boardGroupByProject = false;         // 卡片看板是否按「项目/客户」分组
+        let collapsedBoardGroups = new Set();    // 看板已折叠的项目 key
+        let boardDensity = 'standard';           // 卡片密度：'standard' | 'compact'
+        let boardSortMode = 'urgency';           // 看板排序：urgency | priority | due | updated
+        let boardKeyword = '';                   // 看板检索词：本地即时过滤，刻意不持久化（免得下次打开页面莫名"少任务"）
+        let _kwCacheKey = null, _kwCache = [];   // 分词缓存：一次输入只算一次，供全部卡片复用
+
+        // 优先级语义权重（越小越靠前）
+        const BOARD_PRIO_RANK = { high: 0, medium: 1, low: 2 };
+        const BOARD_SORT_LABEL = { urgency: '紧急优先', priority: '优先级', due: '截止时间', updated: '最近更新' };
+
+        // ==================== 侧边栏视图切换 ====================
+        function switchView(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById('view-' + view);
+            if (target) target.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.view === view);
+            });
+            // 切换到看板时重新加载（处理搜索/拖拽后视图状态）
+            if (view === 'board') {
+                const board = document.querySelector('#view-board .task-board');
+                if (board) setupDragAndDrop();
+            }
+            if (view === 'reports') {
+                loadReports();
+            }
+            if (view === 'reminders') {
+                loadReminderPage();
+            }
+        }
+
+        // ==================== 初始化 ====================
+        function exitApp() {
+            if (!confirm('确定退出工作台？\n退出后需重新双击程序启动。')) return;
+            fetch('/api/shutdown', { method: 'POST' })
+                .then(function () {
+                    document.body.innerHTML = '<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:var(--ink);color:#f8fafc;font-family:sans-serif;z-index:9999;gap:12px;">'
+                        + '<div style="font-size:22px;">✅ 工作台已关闭</div>'
+                        + '<div style="opacity:.7;font-size:14px;">你可以安全关闭此浏览器标签页了</div></div>';
+                })
+                .catch(function () { alert('退出失败，请关闭浏览器或结束程序进程'); });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 恢复看板显示模式（卡片/表格）偏好，避免每次刷新回到卡片
+            try {
+                const savedMode = localStorage.getItem('wb_board_mode') || 'card';
+                applyBoardMode(savedMode);
+                applyDensity(localStorage.getItem('wb_board_density') || 'standard');
+                applyBoardSort(localStorage.getItem('wb_board_sort') || 'urgency', true);
+                loadTableState();
+            } catch (e) {}
+
+            // 服务端北京时间作为“今天”的权威来源（UTC+8，不受系统时区影响）
+            fetch('/api/today').then(function (r) { return r.json(); }).then(function (d) {
+                if (d && d.today) {
+                    currentDate = d.today;
+                    loadTasks();
+                }
+            }).catch(function () { loadTasks(); });
+
+            // 提醒中心：页面加载即拉取，之后每 5 分钟轮询
+            loadReminders();
+            setInterval(loadReminders, 5 * 60 * 1000);
+
+            // 描述浮层：悬停描述行时按可用空间决定向下/向上展开（事件委托，随重渲染自动生效）
+            const descHost = document.querySelector('.task-board');
+            if (descHost && descHost.addEventListener) {
+                descHost.addEventListener('mouseover', function(e) {
+                    const t = e.target;
+                    const w = (t && typeof t.closest === 'function') ? t.closest('.task-desc-wrap') : null;
+                    if (w) orientDescPanel(w);
+                });
+            }
+
+            // 事件委托：监听任务看板上的点击事件
+            document.querySelector('.task-board').addEventListener('click', function(e) {
+                const target = e.target;
+                
+                // 快速状态切换按钮
+                if (target.classList.contains('quick-status-btn')) {
+                    e.stopPropagation();
+                    const taskId = parseInt(target.dataset.id);
+                    const newStatus = target.dataset.status;
+                    quickStatus(taskId, newStatus);
+                    return;
+                }
+                
+                // 删除按钮
+                if (target.classList.contains('delete-task-btn')) {
+                    e.stopPropagation();
+                    const taskId = parseInt(target.dataset.id);
+                    deleteTask(taskId);
+                    return;
+                }
+
+                // 任务卡片点击（编辑）
+                const card = target.closest('.task-card');
+                if (card) {
+                    const taskId = parseInt(card.dataset.id);
+                    showEditTaskModal(taskId);
+                }
+            });
+            
+            // 事件委托：拖拽功能
+            setupDragAndDrop();
+
+            // 表格模式：绑定表头排序
+            bindTableSort();
+
+            // 便利贴输入框 Ctrl+Enter 提交
+            const noteTa = document.getElementById('newNote');
+            if (noteTa) {
+                noteTa.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        addNote();
+                    }
+                });
+            }
+
+            loadTasks();
+            loadProjectLinks();
+            loadNotes();
+
+            // 进展输入框 Ctrl+Enter 提交
+            const progressTa = document.getElementById('progressInput');
+            if (progressTa) {
+                progressTa.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        addProgress();
+                    }
+                });
+            }
+        });
+
+        // ==================== 拖拽功能 ====================
+        function setupDragAndDrop() {
+            const board = document.querySelector('.task-board');
+            if (!board) return;
+            
+            // 使用事件委托，避免重复绑定
+            // 移除旧的监听器（通过 clone 方式）
+            // 直接使用事件委托到 board 上
+            
+            // 拖拽开始
+            board.onDragStart = function(e) {
+                const card = e.target.closest('.task-card');
+                if (!card) return;
+                e.dataTransfer.setData('text/plain', card.dataset.id);
+                e.dataTransfer.effectAllowed = 'move';
+                card.classList.add('dragging');
+            };
+            
+            if (!board._dragHandlers) {
+                board._dragHandlers = true;
+                
+                board.addEventListener('dragstart', function(e) {
+                    board.onDragStart(e);
+                });
+                
+                board.addEventListener('dragend', function(e) {
+                    const card = e.target.closest('.task-card');
+                    if (card) card.classList.remove('dragging');
+                    document.querySelectorAll('.task-column').forEach(col => {
+                        col.classList.remove('drag-over');
+                    });
+                });
+                
+                // 使用事件委托处理列的拖放事件
+                board.addEventListener('dragover', function(e) {
+                    const col = e.target.closest('.task-column');
+                    if (col) {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        col.classList.add('drag-over');
+                    }
+                });
+                
+                board.addEventListener('dragleave', function(e) {
+                    const col = e.target.closest('.task-column');
+                    if (col) {
+                        col.classList.remove('drag-over');
+                    }
+                });
+                
+                board.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    const col = e.target.closest('.task-column');
+                    if (!col) return;
+                    
+                    col.classList.remove('drag-over');
+                    
+                    const taskId = parseInt(e.dataTransfer.getData('text/plain'));
+                    if (!taskId) return;
+                    
+                    const newStatus = col.dataset.status;
+                    const card = document.querySelector(`.task-card[data-id="${taskId}"]`);
+                    const oldStatus = card ? card.dataset.status : '';
+                    
+                    if (oldStatus !== newStatus) {
+                        quickStatus(taskId, newStatus);
+                    }
+                });
+            }
+        }
+
+        // ==================== 数据加载 ====================
+        function loadTasks() {
+            // 恒拉全量：检索已改为本地即时过滤（多字段 + 高亮）。
+            // 若这里继续带 keyword，currentTasks 会退化成"已被过滤的子集"，
+            // 看板检索的过滤基数、命中计数与三项统计就全都错了 —— 这是必须保持全量的原因。
+            fetch('/api/tasks')
+                .then(r => r.json())
+                .then(tasks => {
+                    currentTasks = tasks;
+                    if (boardMode === 'table') {
+                        renderTaskTable();
+                        return;
+                    }
+                    renderBoard();
+                });
+        }
+
+        // ==================== 看板排序 ====================
+        // 默认「紧急优先」是分层排序，不是单纯的按时间或按优先级：
+        //   0 逾期 → 1 今天到期 → 2 高优先级 → 3 三天内 → 4 其余
+        // 依据：时间红线（逾期/今天）是不可协商的，优先于重要性标注；
+        //      高优先级插在"三天内"之前，是因为用户很少标 high（标了就是要紧的）；
+        //      同层内再按 优先级 → 截止日升序 → 新建在前 沉降。
+        const BOARD_TIER = { overdue: 0, today: 1, highPriority: 2, soon: 3, normal: 4 };
+
+        function boardTier(t) {
+            const dl = daysFromToday(t.due_date);
+            if (dl !== null && dl < 0) return BOARD_TIER.overdue;
+            if (dl === 0) return BOARD_TIER.today;
+            if ((t.priority || 'medium') === 'high') return BOARD_TIER.highPriority;
+            if (dl !== null && dl <= 3) return BOARD_TIER.soon;
+            return BOARD_TIER.normal;
+        }
+
+        // 截止日升序；无日期视为最远（沉底）
+        function boardCmpDue(a, b) {
+            const da = a.due_date || '9999-99-99';
+            const db = b.due_date || '9999-99-99';
+            if (da < db) return -1;
+            if (da > db) return 1;
+            return 0;
+        }
+
+        function boardSortTasks(tasks) {
+            const arr = (tasks || []).slice();
+            if (!arr.length) return arr;
+            // 已完成列不参与「该先做什么」排序：按完成日期倒序，最近完成的在最上面
+            if (arr.every(t => t.status === 'done')) {
+                return arr.sort((a, b) => {
+                    const ca = a.completed_date || '', cb = b.completed_date || '';
+                    if (ca !== cb) return ca < cb ? 1 : -1;
+                    return (b.id || 0) - (a.id || 0);
+                });
+            }
+            const mode = boardSortMode;
+            arr.sort((a, b) => {
+                const pa = BOARD_PRIO_RANK[a.priority] ?? 1;
+                const pb = BOARD_PRIO_RANK[b.priority] ?? 1;
+                const prio = pa - pb;
+                const due = boardCmpDue(a, b);
+                const idDesc = (b.id || 0) - (a.id || 0);
+                if (mode === 'priority') return prio || due || idDesc;
+                if (mode === 'due') return due || prio || idDesc;
+                if (mode === 'updated') {
+                    const ua = a.updated_at || '', ub = b.updated_at || '';
+                    if (ua !== ub) return ua < ub ? 1 : -1;
+                    return idDesc;
+                }
+                const ta = boardTier(a), tb = boardTier(b);
+                if (ta !== tb) return ta - tb;
+                return prio || due || idDesc;
+            });
+            return arr;
+        }
+
+        function applyBoardSort(mode) {
+            boardSortMode = BOARD_SORT_LABEL[mode] ? mode : 'urgency';
+            const names = { bsmUrgency: 'urgency', bsmPriority: 'priority', bsmDue: 'due', bsmUpdated: 'updated' };
+            Object.keys(names).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('active', names[id] === boardSortMode);
+            });
+            try { localStorage.setItem('wb_board_sort', boardSortMode); } catch (e) {}
+            renderBoard();
+        }
+
+        function switchBoardSort(mode) {
+            applyBoardSort(mode);
+        }
+
+        // ==================== 看板检索（模糊匹配 + 命中高亮）====================
+        // 设计取舍：
+        //   1) 纯前端过滤 —— currentTasks 恒为全量，输入即时生效，不再每敲一键打一次后端
+        //   2) 空格分词 + AND —— 「甲银行 漏洞」需同时命中，贴合检索直觉（而非 OR 出一堆噪音）
+        //   3) 匹配面覆盖 标题/描述/项目/分类/链接/完成说明/最新进展 —— 客户名、项目名、完成原因都搜得到
+        //   4) 高亮走「原文分段 → 逐段转义」，不在已转义字符串上替换（防止破坏 &amp; 这类实体）
+        const BOARD_SEARCH_FIELDS = ['title', 'description', 'project', 'category', 'link_url', 'completion_note', 'latest_progress'];
+
+        function boardSearchKeywords() {
+            if (_kwCacheKey === boardKeyword) return _kwCache;
+            _kwCacheKey = boardKeyword;
+            _kwCache = String(boardKeyword).trim().toLowerCase().split(/\s+/).filter(Boolean);
+            return _kwCache;
+        }
+
+        function boardSearchHaystack(t) {
+            if (!t) return '';
+            return BOARD_SEARCH_FIELDS.map(f => {
+                const v = t[f];
+                return v == null ? '' : String(v);
+            }).join('\u0001').toLowerCase();
+        }
+
+        function boardMatchKeywords(t, kws) {
+            if (!kws || !kws.length) return true;
+            const hay = boardSearchHaystack(t);
+            return kws.every(k => hay.indexOf(k) !== -1);
+        }
+
+        function filterByBoardKeyword(list) {
+            const kws = boardSearchKeywords();
+            if (!kws.length) return list;
+            return list.filter(t => boardMatchKeywords(t, kws));
+        }
+
+        function highlightKeywords(text, kws) {
+            const s = (text == null ? '' : String(text));
+            const keys = kws || boardSearchKeywords();
+            if (!keys.length || !s) return escapeHtml(s);
+            const lower = s.toLowerCase();
+            const hits = [];
+            keys.forEach(k => {
+                let from = 0, idx;
+                while ((idx = lower.indexOf(k, from)) !== -1) {
+                    hits.push([idx, idx + k.length]);
+                    from = idx + k.length;
+                }
+            });
+            if (!hits.length) return escapeHtml(s);
+            hits.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+            const merged = [];
+            hits.forEach(h => {
+                const last = merged[merged.length - 1];
+                if (last && h[0] <= last[1]) last[1] = Math.max(last[1], h[1]);
+                else merged.push(h.slice());
+            });
+            let out = '', cur = 0;
+            merged.forEach(m => {
+                out += escapeHtml(s.slice(cur, m[0]));
+                out += '<mark class="kw-hit">' + escapeHtml(s.slice(m[0], m[1])) + '</mark>';
+                cur = m[1];
+            });
+            out += escapeHtml(s.slice(cur));
+            return out;
+        }
+
+        // 检索态同步：输入框 / 清除按钮 / 命中回显 —— 三处 UI 全部由 boardKeyword 派生
+        function syncBoardSearch(source) {
+            const kw = String(boardKeyword).trim();
+            const tb = document.getElementById('boardToolbar');
+            if (tb && tb.classList) tb.classList.toggle('is-searching', !!kw);
+            const inp = document.getElementById('boardSearchInput');
+            if (inp && source !== 'board' && inp.value !== boardKeyword) inp.value = boardKeyword;
+            const head = document.getElementById('searchInput');
+            if (head && source !== 'header' && head.value !== boardKeyword) head.value = boardKeyword;
+            const hit = document.getElementById('boardSearchHit');
+            if (hit) {
+                if (!kw) {
+                    hit.textContent = '';
+                    if (hit.classList) hit.classList.remove('is-empty');
+                } else {
+                    const n = filterByBoardKeyword(currentTasks.slice()).length;
+                    hit.innerHTML = `命中 <b>${n}</b> / ${currentTasks.length}`;
+                    if (hit.classList) hit.classList.toggle('is-empty', n === 0);
+                }
+            }
+        }
+
+        function onBoardSearchInput(v) {
+            boardKeyword = (v == null ? '' : String(v));
+            syncBoardSearch('board');
+            renderCurrentView();
+        }
+
+        // 顶栏搜索框＝看板检索的第二个入口，行为必须完全一致：
+        // 输入即抛到看板视图（沿用既有肌肉记忆），过滤交给本地检索，不再打后端
+        function onHeaderSearchInput(v) {
+            boardKeyword = (v == null ? '' : String(v));
+            const vb = document.getElementById('view-board');
+            if (vb && vb.classList && !vb.classList.contains('active')) switchView('board');
+            syncBoardSearch('header');
+            renderCurrentView();
+        }
+
+        function clearBoardSearch() {
+            boardKeyword = '';
+            syncBoardSearch('all');
+            renderCurrentView();
+        }
+
+        function focusBoardSearch() {
+            const inp = document.getElementById('boardSearchInput');
+            if (inp && typeof inp.focus === 'function') inp.focus();
+            if (inp && typeof inp.select === 'function') inp.select();
+        }
+
+        function onBoardSearchKeydown(e) {
+            if (!e || e.key !== 'Escape') return;
+            e.stopPropagation();
+            if (String(boardKeyword).trim()) clearBoardSearch();
+            else if (e.target && typeof e.target.blur === 'function') e.target.blur();
+        }
+
+        function renderBoard() {
+            let list = currentTasks.slice();
+            if (tableFilter.status) list = list.filter(t => t.status === tableFilter.status);
+            if (tableFilter.project) list = list.filter(t => t.project === tableFilter.project);
+            if (tableFilter.overdue) list = list.filter(t => t.due_date && t.status !== 'done' && t.due_date < currentDate);
+            list = filterByBoardKeyword(list);
+            const todo = boardSortTasks(list.filter(t => t.status === 'todo'));
+            const inProgress = boardSortTasks(list.filter(t => t.status === 'in_progress'));
+            const done = boardSortTasks(list.filter(t => t.status === 'done'));
+
+            renderTasks('todoTasks', todo);
+            renderTasks('inProgressTasks', inProgress);
+            renderTasks('doneTasks', done);
+
+            const tc = document.getElementById('todoCount'); if (tc) tc.textContent = todo.length;
+            const ic = document.getElementById('inProgressCount'); if (ic) ic.textContent = inProgress.length;
+            const dc = document.getElementById('doneCount'); if (dc) dc.textContent = done.length;
+
+            // 重新绑定拖拽事件（因为 DOM 被重新创建了）
+            setupDragAndDrop();
+            syncBoardControls(list);
+            // 工具栏统计：与表格模式同口径（全量任务），两种模式数字一致
+            updateBoardStat(currentTasks);
+            syncBoardSearch('render');
+        }
+
+        function syncBoardControls(list) {
+            const ps = document.getElementById('bfProject');
+            if (ps) {
+                const projs = [...new Set(currentTasks.map(t => t.project).filter(p => p))].sort();
+                const cur = tableFilter.project;
+                ps.innerHTML = '<option value="">全部项目</option>' + projs.map(p => `<option value="${escapeHtml(p)}" ${p === cur ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('');
+            }
+            const ss = document.getElementById('bfStatus'); if (ss) ss.value = tableFilter.status || '';
+            const ov = document.getElementById('bfOverdue'); if (ov) ov.checked = !!tableFilter.overdue;
+            const cnt = document.getElementById('bfCount');
+            if (cnt) cnt.textContent = `筛选后 ${list.length} / ${currentTasks.length}`;
+            const bg = document.getElementById('btnBoardGroupBy');
+            if (bg) {
+                bg.classList.toggle('active', boardGroupByProject);
+                bg.textContent = boardGroupByProject ? '▦ 取消分组' : '▦ 看板按项目分组';
+            }
+            const bag = document.getElementById('btnBoardGroupAll');
+            if (bag) bag.style.display = boardGroupByProject ? '' : 'none';
+            updateBoardGroupAllLabel();
+        }
+
+        function renderCurrentView() {
+            if (boardMode === 'table') renderTaskTable(); else renderBoard();
+        }
+
+        function onBoardFilter() {
+            const s = document.getElementById('bfStatus');
+            const p = document.getElementById('bfProject');
+            const o = document.getElementById('bfOverdue');
+            tableFilter.status = s ? s.value : '';
+            tableFilter.project = p ? p.value : '';
+            tableFilter.overdue = o ? o.checked : false;
+            renderCurrentView();
+            saveTableState();
+        }
+
+        // ==================== 表格模式渲染 ====================
+        function applyBoardMode(mode) {
+            boardMode = mode;
+            const isTable = mode === 'table';
+            const board = document.getElementById('taskBoard');
+            const wrap = document.getElementById('taskTableWrap');
+            if (board) board.style.display = isTable ? 'none' : '';
+            if (wrap) wrap.style.display = isTable ? '' : 'none';
+            const bf = document.getElementById('boardFilterBar');
+            if (bf) bf.style.display = isTable ? 'none' : '';
+            const mc = document.getElementById('modeCard');
+            const mt = document.getElementById('modeTable');
+            if (mc) mc.classList.toggle('active', !isTable);
+            if (mt) mt.classList.toggle('active', isTable);
+            // 密度档位只对卡片模式有意义
+            const dt = document.getElementById('densityToggle');
+            if (dt) dt.style.display = isTable ? 'none' : '';
+            // 排序切换同理：表格模式用列头排序
+            const st = document.getElementById('sortToggle');
+            if (st) st.style.display = isTable ? 'none' : '';
+            try { localStorage.setItem('wb_board_mode', mode); } catch (e) {}
+        }
+
+        // ==================== 卡片密度档位 ====================
+        function applyDensity(mode) {
+            boardDensity = mode === 'compact' ? 'compact' : 'standard';
+            const board = document.getElementById('taskBoard');
+            if (board) board.classList.toggle('is-compact', boardDensity === 'compact');
+            const ds = document.getElementById('denStd');
+            const dc = document.getElementById('denCompact');
+            if (ds) ds.classList.toggle('active', boardDensity !== 'compact');
+            if (dc) dc.classList.toggle('active', boardDensity === 'compact');
+            try { localStorage.setItem('wb_board_density', boardDensity); } catch (e) {}
+        }
+
+        function switchDensity(mode) {
+            applyDensity(mode);
+        }
+
+        // ==================== 描述浮层：方向自适应 ====================
+        // 浮层默认在卡片下方展开；卡片贴近列底部、下方空间不足时改向上展开，
+        // 并按可用空间收敛 max-height —— 保证浮层始终落在列容器内，不被滚出裁切。
+        const DESC_PANEL_MAX = 200;   // 浮层高度上限（px）
+        const DESC_PANEL_MIN = 96;    // 可用高度低于此值时才考虑换向
+        const DESC_PANEL_GAP = 6;     // 浮层与卡片之间的间距（px）
+
+        function orientDescPanel(wrap) {
+            if (!wrap || typeof wrap.closest !== 'function') return;
+            const card = wrap.closest('.task-card');
+            const body = wrap.closest('.task-column-body');
+            const panel = (typeof wrap.querySelector === 'function') ? wrap.querySelector('.task-desc') : null;
+            if (!card || !body || !panel || !panel.style) return;
+            if (typeof card.getBoundingClientRect !== 'function') return;
+            if (typeof body.getBoundingClientRect !== 'function') return;
+            const cb = card.getBoundingClientRect();
+            const bb = body.getBoundingClientRect();
+            const below = bb.bottom - cb.bottom - DESC_PANEL_GAP;
+            const above = cb.top - bb.top - DESC_PANEL_GAP;
+            const up = below < DESC_PANEL_MIN && above > below;
+            const room = Math.max(DESC_PANEL_MIN, up ? above : below);
+            panel.style.maxHeight = Math.min(DESC_PANEL_MAX, Math.floor(room)) + 'px';
+            wrap.classList.toggle('desc-panel-up', up);
+        }
+
+        function switchBoardMode(mode) {
+            applyBoardMode(mode);
+            loadTasks();
+        }
+
+        function onTableStatusChange(taskId, newStatus) {
+            if (newStatus === 'done') {
+                openCompletionModal(taskId, null);
+            } else {
+                fetch(`/api/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(r => r.json())
+                .then(() => { loadTasks(); });
+            }
+        }
+
+        function onTablePriorityChange(taskId, newPriority) {
+            fetch(`/api/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ priority: newPriority })
+            })
+            .then(r => r.json())
+            .then(() => { loadTasks(); });
+        }
+
+        function sortTasks(tasks) {
+            const { key, dir } = tableSort;
+            const mul = dir === 'asc' ? 1 : -1;
+            const sRank = { todo: 0, in_progress: 1, done: 2 };
+            const pRank = { high: 0, medium: 1, low: 2 };
+            const arr = tasks.slice();
+            arr.sort((a, b) => {
+                let va, vb;
+                switch (key) {
+                    case 'status': va = sRank[a.status] ?? 3; vb = sRank[b.status] ?? 3; break;
+                    case 'priority': va = pRank[a.priority] ?? 3; vb = pRank[b.priority] ?? 3; break;
+                    case 'project': va = (a.project || '').toLowerCase(); vb = (b.project || '').toLowerCase(); break;
+                    case 'title': va = (a.title || '').toLowerCase(); vb = (b.title || '').toLowerCase(); break;
+                    case 'due_date': va = a.due_date || '9999-99-99'; vb = b.due_date || '9999-99-99'; break;
+                    case 'progress': va = a.progress_count || 0; vb = b.progress_count || 0; break;
+                    default: va = 0; vb = 0;
+                }
+                if (va < vb) return -1 * mul;
+                if (va > vb) return 1 * mul;
+                return (pRank[a.priority] ?? 3) - (pRank[b.priority] ?? 3);
+            });
+            return arr;
+        }
+
+        function taskRowHtml(t) {
+            const overdue = t.due_date && t.status !== 'done' && t.due_date < currentDate;
+            const linkHtml = t.link_url
+                ? `<a href="${escapeHtml(t.link_url)}" target="_blank" title="${escapeHtml(t.link_url)}" onclick="event.stopPropagation()">🔗</a>`
+                : '';
+            const kws = boardSearchKeywords();
+            const note = (t.status === 'done' && t.completion_note)
+                ? highlightKeywords(t.completion_note, kws)
+                : (t.latest_progress ? highlightKeywords(t.latest_progress, kws) : '');
+            const subDesc = t.description ? `<span class="t-sub">${highlightKeywords(t.description, kws)}</span>` : '';
+            const actions = `
+                <button class="btn btn-success btn-sm" onclick="event.stopPropagation();quickStatus(${t.id}, '${t.status === 'done' ? 'todo' : 'done'}')">${t.status === 'done' ? '↩ 恢复' : '✓ 完成'}</button>
+                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteTask(${t.id})">✕ 删除</button>`;
+            const checked = selectedIds.has(t.id) ? 'checked' : '';
+            return `<tr class="${t.status === 'done' ? 'row-done' : ''}" data-id="${t.id}" onclick="showEditTaskModal(${t.id})">
+                <td class="col-check"><input type="checkbox" class="tf-row-check" data-id="${t.id}" ${checked} onclick="event.stopPropagation();onToggleRowCheck(this)"></td>
+                <td><select class="tbl-status-select st-${t.status}" data-id="${t.id}" onclick="event.stopPropagation()" onchange="onTableStatusChange(${t.id}, this.value)">
+                    <option value="todo" ${t.status==='todo'?'selected':''}>待办</option>
+                    <option value="in_progress" ${t.status==='in_progress'?'selected':''}>进行中</option>
+                    <option value="done" ${t.status==='done'?'selected':''}>已完成</option>
+                </select></td>
+                <td class="cell-title">${highlightKeywords(t.title, kws)}${repeatLabel(t) ? ` <span style="color:var(--brand);font-size:11.5px;white-space:nowrap;">${repeatLabel(t)}</span>` : ''}${subDesc}</td>
+                <td>${t.project ? `<span class="tag-proj">${escapeHtml(t.project)}</span>` : '<span style="color:var(--ink-4)">—</span>'}</td>
+                <td><select class="tbl-pri-select" data-id="${t.id}" onclick="event.stopPropagation()" onchange="onTablePriorityChange(${t.id}, this.value)">
+                    <option value="high" ${t.priority==='high'?'selected':''}>高</option>
+                    <option value="medium" ${t.priority==='medium'?'selected':''}>中</option>
+                    <option value="low" ${t.priority==='low'?'selected':''}>低</option>
+                </select></td>
+                <td class="cell-due ${overdue ? 'overdue' : ''}">${t.due_date ? (overdue ? '⚠ ' + escapeHtml(t.due_date) : escapeHtml(t.due_date)) : '<span style="color:var(--ink-4)">—</span>'}</td>
+                <td class="cell-progress">${t.progress_count > 0 ? (t.progress_count + ' 条') : '<span style="color:var(--ink-4)">—</span>'}</td>
+                <td class="cell-note">${note ? note : '<span style="color:var(--ink-4)">—</span>'} ${linkHtml}</td>
+                <td class="cell-actions">${actions}</td>
+            </tr>`;
+        }
+
+        function renderTaskTable() {
+            // 1) 按筛选条件过滤（状态/项目/逾期 + 看板检索词，均在本地叠加）
+            let list = currentTasks.slice();
+            if (tableFilter.status) list = list.filter(t => t.status === tableFilter.status);
+            if (tableFilter.project) list = list.filter(t => t.project === tableFilter.project);
+            if (tableFilter.overdue) list = list.filter(t => t.due_date && t.status !== 'done' && t.due_date < currentDate);
+            list = filterByBoardKeyword(list);
+
+            // 2) 填充项目下拉（保留当前选中）
+            const projSel = document.getElementById('tfProject');
+            if (projSel) {
+                const projs = [...new Set(currentTasks.map(t => t.project).filter(p => p))].sort();
+                const cur = tableFilter.project;
+                projSel.innerHTML = '<option value="">全部项目</option>' +
+                    projs.map(p => `<option value="${escapeHtml(p)}" ${p === cur ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('');
+            }
+
+            const table = document.getElementById('taskTable');
+            table.querySelectorAll('tbody').forEach(tb => tb.remove());
+
+            if (!list.length) {
+                const et = document.createElement('tbody'); et.id = 'taskTableBody';
+                et.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink-4);padding:24px;">没有符合条件的任务</td></tr>';
+                table.appendChild(et);
+            } else if (!groupByProject) {
+                const tb = document.createElement('tbody'); tb.id = 'taskTableBody';
+                tb.innerHTML = sortTasks(list).map(taskRowHtml).join('');
+                table.appendChild(tb);
+            } else {
+                // 按项目/客户分组（未分类置底）
+                const groups = {};
+                list.forEach(t => { const k = t.project || ''; (groups[k] = groups[k] || []).push(t); });
+                const keys = Object.keys(groups).sort((a, b) => {
+                    if (a === '' && b === '') return 0;
+                    if (a === '') return 1;
+                    if (b === '') return -1;
+                    return a.localeCompare(b, 'zh');
+                });
+                keys.forEach(k => {
+                    const gname = k === '' ? '未分类' : k;
+                    const collapsed = collapsedGroups.has(k);
+                    const gh = document.createElement('tbody'); gh.className = 'group-head';
+                    gh.innerHTML = `<tr class="group-header" onclick="toggleGroup(this)"><td colspan="9"><span class="gh-ico">${collapsed ? '▸' : '▾'}</span> ${escapeHtml(gname)} <span class="gh-count">${groups[k].length} 项</span></td></tr>`;
+                    table.appendChild(gh);
+                    const gb = document.createElement('tbody'); gb.className = 'group-body'; gb.dataset.groupKey = k;
+                    if (collapsed) gb.style.display = 'none';
+                    gb.innerHTML = sortTasks(groups[k]).map(taskRowHtml).join('');
+                    table.appendChild(gb);
+                });
+            }
+            updateSortHeaders();
+            updateBoardStat(currentTasks);
+            updateCheckAllState();
+            const cnt = document.getElementById('tfCount');
+            if (cnt) cnt.textContent = `筛选后 ${list.length} / ${currentTasks.length}`;
+            syncTableControls();
+            syncBoardSearch('render');
+            saveTableState();
+        }
+
+        function toggleGroup(headerEl) {
+            const headerTb = headerEl.closest('tbody');
+            const gb = headerTb.nextElementSibling;
+            if (!gb || !gb.classList.contains('group-body')) return;
+            const isHidden = gb.style.display === 'none';
+            gb.style.display = isHidden ? '' : 'none';
+            const k = gb.dataset.groupKey;
+            if (isHidden) collapsedGroups.delete(k); else collapsedGroups.add(k);
+            const ico = headerEl.querySelector('.gh-ico');
+            if (ico) ico.textContent = isHidden ? '▾' : '▸';
+            updateGroupAllLabel();
+        }
+
+        function currentGroupKeys() {
+            let list = currentTasks.slice();
+            if (tableFilter.status) list = list.filter(t => t.status === tableFilter.status);
+            if (tableFilter.project) list = list.filter(t => t.project === tableFilter.project);
+            if (tableFilter.overdue) list = list.filter(t => t.due_date && t.status !== 'done' && t.due_date < currentDate);
+            const keys = new Set();
+            list.forEach(t => keys.add(t.project || ''));
+            return [...keys];
+        }
+
+        function updateGroupAllLabel() {
+            const btn = document.getElementById('btnGroupAll');
+            if (!btn || !groupByProject) return;
+            const keys = currentGroupKeys();
+            const allCollapsed = keys.length > 0 && keys.every(k => collapsedGroups.has(k));
+            btn.textContent = allCollapsed ? '▾ 全部展开' : '▴ 全部折叠';
+        }
+
+        function toggleGroupAll() {
+            if (!groupByProject) return;
+            const keys = currentGroupKeys();
+            const allCollapsed = keys.length > 0 && keys.every(k => collapsedGroups.has(k));
+            if (allCollapsed) collapsedGroups.clear(); else keys.forEach(k => collapsedGroups.add(k));
+            renderTaskTable();
+            updateGroupAllLabel();
+        }
+
+        function toggleGroupBy() {
+            groupByProject = !groupByProject;
+            const btn = document.getElementById('btnGroupBy');
+            if (btn) {
+                btn.classList.toggle('active', groupByProject);
+                btn.textContent = groupByProject ? '▦ 取消分组' : '▦ 按项目分组';
+            }
+            const allBtn = document.getElementById('btnGroupAll');
+            if (allBtn) allBtn.style.display = groupByProject ? '' : 'none';
+            renderTaskTable();
+            updateGroupAllLabel();
+            saveTableState();
+        }
+
+        const TBL_STATE_KEY = 'wb_table_state';
+        function loadTableState() {
+            try {
+                const s = JSON.parse(localStorage.getItem(TBL_STATE_KEY) || 'null');
+                if (!s) return;
+                if (s.filter) {
+                    tableFilter.status = s.filter.status || '';
+                    tableFilter.project = s.filter.project || '';
+                    tableFilter.overdue = !!s.filter.overdue;
+                }
+                if (s.sort) {
+                    tableSort.key = s.sort.key || 'status';
+                    tableSort.dir = (s.sort.dir === 'desc') ? 'desc' : 'asc';
+                }
+                if (typeof s.group === 'boolean') groupByProject = s.group;
+                if (typeof s.boardGroup === 'boolean') boardGroupByProject = s.boardGroup;
+                if (Array.isArray(s.boardCollapsed)) collapsedBoardGroups = new Set(s.boardCollapsed);
+            } catch (e) {}
+        }
+        function saveTableState() {
+            try {
+                localStorage.setItem(TBL_STATE_KEY, JSON.stringify({
+                    filter: tableFilter,
+                    sort: tableSort,
+                    group: groupByProject,
+                    boardGroup: boardGroupByProject,
+                    boardCollapsed: [...collapsedBoardGroups]
+                }));
+            } catch (e) {}
+        }
+        function syncTableControls() {
+            const ov = document.getElementById('tfOverdue');
+            if (ov) ov.checked = !!tableFilter.overdue;
+            const ss = document.getElementById('tfStatus'); if (ss) ss.value = tableFilter.status || '';
+            const ps = document.getElementById('tfProject'); if (ps) ps.value = tableFilter.project || '';
+            const gb = document.getElementById('btnGroupBy');
+            if (gb) {
+                gb.classList.toggle('active', groupByProject);
+                gb.textContent = groupByProject ? '▦ 取消分组' : '▦ 按项目分组';
+            }
+            const allBtn = document.getElementById('btnGroupAll');
+            if (allBtn) allBtn.style.display = groupByProject ? '' : 'none';
+            updateGroupAllLabel();
+        }
+
+        function exportTableCSV() {
+            if (!currentTasks || !currentTasks.length) { toast('暂无可导出的任务'); return; }
+            // 与表格当前展示一致：先按筛选条件过滤，再排序
+            let list = currentTasks.slice();
+            if (tableFilter.status) list = list.filter(t => t.status === tableFilter.status);
+            if (tableFilter.project) list = list.filter(t => t.project === tableFilter.project);
+            if (tableFilter.overdue) list = list.filter(t => t.due_date && t.status !== 'done' && t.due_date < currentDate);
+            list = sortTasks(list);
+            const stMap = { todo: '待办', in_progress: '进行中', done: '已完成' };
+            const priMap = { high: '高', medium: '中', low: '低' };
+            const headers = ['状态', '标题', '项目/客户', '优先级', '截止', '进展数', '最新进展/备注', '完成原因', '链接', '描述'];
+            const rows = list.map(t => [
+                stMap[t.status] || t.status || '',
+                t.title || '',
+                t.project || '',
+                priMap[t.priority] || t.priority || '',
+                t.due_date || '',
+                (t.progress_count != null ? t.progress_count : 0),
+                (t.status === 'done' && t.completion_note) ? t.completion_note : (t.latest_progress || ''),
+                t.completion_note || '',
+                t.link_url || '',
+                t.description || ''
+            ]);
+            const esc = v => {
+                const s = String(v == null ? '' : v);
+                return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+            };
+            const csv = [headers, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
+            const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const ts = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            a.href = url;
+            a.download = `任务清单_${ts.getFullYear()}${pad(ts.getMonth() + 1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast(`已导出 ${list.length} 条任务到 CSV`);
+        }
+
+        function onTableFilter() {
+            const s = document.getElementById('tfStatus');
+            const p = document.getElementById('tfProject');
+            const o = document.getElementById('tfOverdue');
+            tableFilter.status = s ? s.value : '';
+            tableFilter.project = p ? p.value : '';
+            tableFilter.overdue = o ? o.checked : false;
+            renderCurrentView();
+            saveTableState();
+        }
+
+        // ==================== 表格多选 / 批量操作 ====================
+        function putTaskStatus(id, payload) {
+            return fetch(`/api/tasks/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+        }
+
+        function onToggleRowCheck(cb) {
+            const id = parseInt(cb.dataset.id);
+            if (cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+            updateBatchBar();
+            updateCheckAllState();
+        }
+
+        function onToggleCheckAll(cb) {
+            document.querySelectorAll('#taskTable .tf-row-check').forEach(c => {
+                const id = parseInt(c.dataset.id);
+                if (cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+                c.checked = cb.checked;
+            });
+            updateBatchBar();
+        }
+
+        function updateCheckAllState() {
+            const cb = document.getElementById('tfCheckAll');
+            if (!cb) return;
+            const rows = [...document.querySelectorAll('#taskTable .tf-row-check')];
+            cb.checked = rows.length > 0 && rows.every(c => c.checked);
+        }
+
+        function updateBatchBar() {
+            const bar = document.getElementById('batchBar');
+            const cnt = document.getElementById('batchCount');
+            if (!bar) return;
+            if (selectedIds.size > 0) {
+                bar.style.display = 'flex';
+                if (cnt) cnt.textContent = selectedIds.size;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        function clearSelection() {
+            selectedIds.clear();
+            updateBatchBar();
+            renderTaskTable();
+        }
+
+        function batchSetStatus(status) {
+            if (selectedIds.size === 0) return;
+            if (status === 'done') { openBatchCompleteModal(); return; }
+            const ids = [...selectedIds];
+            Promise.all(ids.map(id => putTaskStatus(id, { status: status })))
+                .then(() => { clearSelection(); loadTasks(); })
+                .catch(() => alert('批量操作失败，请重试'));
+        }
+
+        function batchDelete() {
+            if (selectedIds.size === 0) return;
+            if (!confirm(`确定删除选中的 ${selectedIds.size} 个任务？`)) return;
+            const ids = [...selectedIds];
+            Promise.all(ids.map(id => fetch(`/api/tasks/${id}`, { method: 'DELETE' })))
+                .then(() => { clearSelection(); loadTasks(); })
+                .catch(() => alert('批量删除失败，请重试'));
+        }
+
+        function batchSetPriority() {
+            const sel = document.getElementById('batchPriority');
+            const pri = sel ? sel.value : '';
+            const priLabel = { high: '高', medium: '中', low: '低' };
+            if (!pri) { toast('请先选择目标优先级'); return; }
+            if (selectedIds.size === 0) { toast('请先勾选任务'); return; }
+            const ids = [...selectedIds];
+            Promise.all(ids.map(id => putTaskStatus(id, { priority: pri })))
+                .then(() => { toast(`已将 ${ids.length} 项优先级改为「${priLabel[pri]}」`); clearSelection(); loadTasks(); })
+                .catch(() => toast('批量改优先级失败，请重试'));
+        }
+
+        function openBatchCompleteModal() {
+            if (selectedIds.size === 0) return;
+            document.getElementById('batchDoneCount').textContent = selectedIds.size;
+            document.getElementById('batchCompleteNote').value = '';
+            document.getElementById('batchCompleteDate').value = currentDate;
+            document.getElementById('batchCompleteModal').classList.add('active');
+            setTimeout(() => document.getElementById('batchCompleteNote').focus(), 50);
+        }
+
+        function closeBatchCompleteModal() {
+            document.getElementById('batchCompleteModal').classList.remove('active');
+        }
+
+        function confirmBatchComplete() {
+            const note = document.getElementById('batchCompleteNote').value.trim();
+            const cdate = document.getElementById('batchCompleteDate').value;
+            const ids = [...selectedIds];
+            Promise.all(ids.map(id => putTaskStatus(id, {
+                status: 'done', completion_note: note, completed_date: cdate
+            })))
+                .then(() => { closeBatchCompleteModal(); clearSelection(); loadTasks(); })
+                .catch(() => alert('批量完成失败，请重试'));
+        }
+
+        function updateBoardStat(tasks) {
+            const stat = document.getElementById('boardStat');
+            if (!stat) return;
+            const total = tasks.length;
+            const done = tasks.filter(t => t.status === 'done').length;
+            const overdue = tasks.filter(t => t.due_date && t.status !== 'done' && t.due_date < currentDate).length;
+            stat.textContent = `共 ${total} 项 · 已完成 ${done} · 逾期 ${overdue}`;
+        }
+
+        function updateSortHeaders() {
+            document.querySelectorAll('#taskTable thead th[data-sort]').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                const ico = th.querySelector('.sort-ico');
+                if (th.dataset.sort === tableSort.key) {
+                    th.classList.add(tableSort.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                    if (ico) ico.textContent = tableSort.dir === 'asc' ? '▲' : '▼';
+                } else if (ico) {
+                    ico.textContent = '⇅';
+                }
+            });
+        }
+
+        function bindTableSort() {
+            document.querySelectorAll('#taskTable thead th[data-sort]').forEach(th => {
+                th.addEventListener('click', () => {
+                    const key = th.dataset.sort;
+                    if (tableSort.key === key) {
+                        tableSort.dir = tableSort.dir === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        tableSort = { key: key, dir: 'asc' };
+                    }
+                    saveTableState();
+                    loadTasks();
+                });
+            });
+        }
+
+        // 距今天数：正数=还有几天，0=今天，负数=已逾期几天。
+        // 以服务端返回的北京时间 currentDate 为基准，避免客户端时区偏差。
+        function daysFromToday(dateStr) {
+            if (!dateStr || !currentDate) return null;
+            const a = Date.parse(dateStr + 'T00:00:00');
+            const b = Date.parse(currentDate + 'T00:00:00');
+            if (isNaN(a) || isNaN(b)) return null;
+            return Math.round((a - b) / 86400000);
+        }
+
+        function taskCardHtml(t) {
+            const priorityClass = t.priority === 'high' ? 'tag-priority-high' :
+                                t.priority === 'medium' ? 'tag-priority-medium' : 'tag-priority-low';
+            const priorityLabel = t.priority === 'high' ? '高' : t.priority === 'medium' ? '中' : '低';
+            // 供 CSS 定位优先级视觉：非法/空值一律归入 medium（默认档）
+            const prioKey = (t.priority === 'high' || t.priority === 'low') ? t.priority : 'medium';
+            const linkHtml = t.link_url ?
+                `<a href="${escapeHtml(t.link_url)}" target="_blank" title="${escapeHtml(t.link_url)}">🔗 链接</a>` : '';
+            const projectTag = t.project ? `<span class="tag tag-project">${escapeHtml(t.project)}</span>` : '';
+            const kk = t.kind || 'task';
+            const KIND_LABEL_MAP = { routine: '节律', commit: '承诺', plan: '计划' };
+            const kindTag = kk !== 'task'
+                ? `<span class="tag rc-kind rc-kind-${kk}">${KIND_LABEL_MAP[kk] || ''}</span>` : '';
+            // 截止日信号：逾期/今日/3天内临期在卡片上直接可见（已完成任务不参与紧迫度判定）
+            const dl = (t.status === 'done') ? null : daysFromToday(t.due_date);
+            let urgency = '';
+            let dueCls = 'tag tag-due';
+            let dueTxt = '';
+            if (t.due_date) {
+                if (dl === null) { dueTxt = '📅 ' + t.due_date; }
+                else if (dl < 0) { urgency = ' is-overdue'; dueCls += ' is-overdue'; dueTxt = '⚠ 逾期 ' + (-dl) + ' 天'; }
+                else if (dl === 0) { urgency = ' is-today'; dueCls += ' is-today'; dueTxt = '📅 今天到期'; }
+                else if (dl <= 3) { urgency = ' is-soon'; dueCls += ' is-soon'; dueTxt = '📅 ' + dl + ' 天后'; }
+                else { dueTxt = '📅 ' + t.due_date; }
+            }
+            const dueHtml = t.due_date ? `<span class="${dueCls}" title="截止日 ${escapeHtml(t.due_date)}">${dueTxt}</span>` : '';
+            const repeatTag = repeatLabel(t) ? `<span class="tag tag-repeat">${repeatLabel(t)}</span>` : '';
+            const kws = boardSearchKeywords();
+            const descHtml = t.description ? `<div class="task-desc-wrap"><div class="task-desc">${highlightKeywords(t.description, kws)}</div></div>` : '';
+            const progressHtml = (t.progress_count > 0) ?
+                `<div class="task-progress"><span class="tp-count">📈 ${t.progress_count}</span><span class="tp-latest">${highlightKeywords(t.latest_progress || '', kws)}</span></div>` : '';
+            const stageHtml = (t.subtask_total > 0) ?
+                `<div class="task-progress"><span class="tp-count">🧩 ${t.subtask_done || 0}/${t.subtask_total}</span><span class="tp-latest">阶段完成</span></div>` : '';
+            const noteHtml = (t.status === 'done' && t.completion_note) ?
+                `<div class="task-note">✓ ${highlightKeywords(t.completion_note, kws)}</div>` : '';
+            return `
+                <div class="task-card prio-${prioKey}${t.status === 'done' ? ' done' : ''}${urgency}"
+                     data-id="${t.id}" data-status="${t.status}"
+                     draggable="true">
+                    <div class="task-title">${highlightKeywords(t.title, kws)}</div>
+                    ${descHtml}
+                    <div class="task-meta">
+                        ${kindTag}
+                        ${projectTag}
+                        <span class="tag ${priorityClass}">${priorityLabel}</span>
+                        ${dueHtml}
+                        ${repeatTag}
+                        ${linkHtml}
+                    </div>
+                    ${stageHtml}
+                    ${progressHtml}
+                    ${noteHtml}
+                    <div class="task-actions">
+                        <button class="btn btn-success btn-sm quick-status-btn" data-id="${t.id}" data-status="${t.status === 'done' ? 'todo' : 'done'}">
+                            ${t.status === 'done' ? '↩ 恢复' : '✓ 完成'}
+                        </button>
+                        <button class="btn btn-danger btn-sm delete-task-btn" data-id="${t.id}">✕ 删除</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTasks(containerId, tasks) {
+            const container = document.getElementById(containerId);
+            const kw = String(boardKeyword).trim();
+            if (tasks.length === 0) {
+                const msg = kw ? '未匹配到「' + escapeHtml(kw) + '」的任务' : '暂无任务';
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink-4);font-size:13px;">' + msg + '</div>';
+                return;
+            }
+            if (!boardGroupByProject) {
+                container.innerHTML = tasks.map(taskCardHtml).join('');
+                return;
+            }
+            // 卡片看板按项目/客户分组（未分类置底）
+            const groups = {};
+            tasks.forEach(t => { const k = t.project || ''; (groups[k] = groups[k] || []).push(t); });
+            const keys = Object.keys(groups).sort((a, b) => {
+                if (a === '' && b === '') return 0;
+                if (a === '') return 1;
+                if (b === '') return -1;
+                return a.localeCompare(b, 'zh');
+            });
+            let html = '';
+            keys.forEach(k => {
+                const gname = k === '' ? '未分类' : k;
+                // 检索期间临时忽略折叠态：否则命中的卡片会藏在折叠分组里，看着像"搜不到"
+                const collapsed = !kw && collapsedBoardGroups.has(k);
+                html += `<div class="board-group">
+                    <div class="board-group-header" onclick="toggleBoardGroup(this)">
+                        <span class="gh-ico">${collapsed ? '▸' : '▾'}</span>
+                        <span class="gh-name">${escapeHtml(gname)}</span>
+                        <span class="gh-count">${groups[k].length}</span>
+                    </div>
+                    <div class="board-group-body" data-group-key="${escapeHtml(k)}" style="${collapsed ? 'display:none;' : ''}">
+                        ${groups[k].map(taskCardHtml).join('')}
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleBoardGroup(headerEl) {
+            const groupDiv = headerEl.closest('.board-group');
+            if (!groupDiv) return;
+            const body = groupDiv.querySelector('.board-group-body');
+            if (!body) return;
+            const k = body.dataset.groupKey;
+            const isHidden = body.style.display === 'none';
+            body.style.display = isHidden ? '' : 'none';
+            if (isHidden) collapsedBoardGroups.delete(k); else collapsedBoardGroups.add(k);
+            const ico = headerEl.querySelector('.gh-ico');
+            if (ico) ico.textContent = isHidden ? '▾' : '▸';
+            updateBoardGroupAllLabel();
+        }
+
+        function currentBoardGroupKeys() {
+            let list = currentTasks.slice();
+            if (tableFilter.status) list = list.filter(t => t.status === tableFilter.status);
+            if (tableFilter.project) list = list.filter(t => t.project === tableFilter.project);
+            if (tableFilter.overdue) list = list.filter(t => t.due_date && t.status !== 'done' && t.due_date < currentDate);
+            list = filterByBoardKeyword(list);
+            const keys = new Set();
+            list.forEach(t => keys.add(t.project || ''));
+            return [...keys];
+        }
+
+        function updateBoardGroupAllLabel() {
+            const btn = document.getElementById('btnBoardGroupAll');
+            if (!btn || !boardGroupByProject) return;
+            const keys = currentBoardGroupKeys();
+            const allCollapsed = keys.length > 0 && keys.every(k => collapsedBoardGroups.has(k));
+            btn.textContent = allCollapsed ? '▾ 全部展开' : '▴ 全部折叠';
+        }
+
+        function toggleBoardGroupAll() {
+            if (!boardGroupByProject) return;
+            const keys = currentBoardGroupKeys();
+            const allCollapsed = keys.length > 0 && keys.every(k => collapsedBoardGroups.has(k));
+            if (allCollapsed) collapsedBoardGroups.clear(); else keys.forEach(k => collapsedBoardGroups.add(k));
+            renderBoard();
+            updateBoardGroupAllLabel();
+        }
+
+        function toggleBoardGroupBy() {
+            boardGroupByProject = !boardGroupByProject;
+            const btn = document.getElementById('btnBoardGroupBy');
+            if (btn) {
+                btn.classList.toggle('active', boardGroupByProject);
+                btn.textContent = boardGroupByProject ? '▦ 取消分组' : '▦ 看板按项目分组';
+            }
+            const allBtn = document.getElementById('btnBoardGroupAll');
+            if (allBtn) allBtn.style.display = boardGroupByProject ? '' : 'none';
+            renderBoard();
+            updateBoardGroupAllLabel();
+            saveTableState();
+        }
+
+        // ==================== 任务操作 ====================
+        const RT_WEEK = ['一', '二', '三', '四', '五', '六', '日'];
+
+        function repeatLabel(t) {
+            const f = t.repeat_freq;
+            if (!f || f === 'none') return '';
+            if (f === 'daily') return '🔁 每日';
+            if (f === 'weekly') return '🔁 每周' + (RT_WEEK[(t.repeat_day == null ? 0 : t.repeat_day) % 7]);
+            const md = t.repeat_day == null ? 1 : t.repeat_day;
+            if (f === 'quarterly') return '🔁 每季度' + (md >= 31 ? '月底' : md + ' 日');
+            if (f === 'yearly') {
+                const mm = t.repeat_month == null ? 1 : t.repeat_month;
+                return '🔁 每年 ' + mm + ' 月' + (md >= 31 ? '底' : md + ' 日');
+            }
+            return '🔁 每月' + (md >= 31 ? '月底' : md + ' 日');
+        }
+
+        let subtaskTotal = 0;
+
+        // ==================== 计划节点（子任务） ====================
+        // 计划类父任务在里程碑页不显示自身日期，而是聚合「最早的未完成节点」。
+        function loadSubtasks(parentId) {
+            const listEl = document.getElementById('subtaskList');
+            const cntEl = document.getElementById('subtaskCount');
+            if (!listEl) return;
+            fetch('/api/tasks?parent_id=' + parentId)
+                .then(r => r.json())
+                .then(list => {
+                    subtaskTotal = list.length;
+                    const box = document.getElementById('subtaskBox');
+                    if (box && subtaskTotal > 0) box.style.display = '';
+                    if (!subtaskTotal) {
+                        if (cntEl) cntEl.textContent = '';
+                        listEl.innerHTML = '<div style="font-size:12px;color:var(--ink-4);text-align:center;padding:8px;">暂无节点。添加后父任务会在里程碑页显示「下一节点 + 阶段进度」</div>';
+                        return;
+                    }
+                    const doneN = list.filter(t => t.status === 'done').length;
+                    if (cntEl) cntEl.textContent = doneN + '/' + subtaskTotal + ' 已完成';
+                    listEl.innerHTML = list.map(t => `
+                        <div class="subtask-row ${t.status === 'done' ? 'done' : ''}">
+                            <button class="st-check" onclick="toggleSubtask(${t.id}, '${t.status === 'done' ? 'todo' : 'done'}')">${t.status === 'done' ? '✓' : ''}</button>
+                            <span class="st-title">${escapeHtml(t.title)}</span>
+                            <span class="st-date">${t.due_date ? escapeHtml(t.due_date) : '未排期'}</span>
+                            <button class="st-del" onclick="deleteSubtask(${t.id})">✕</button>
+                        </div>`).join('');
+                })
+                .catch(() => {});
+        }
+
+        function addSubtask() {
+            const parentId = document.getElementById('editTaskId').value;
+            if (!parentId) { toast('请先保存父任务，再添加节点'); return; }
+            const title = document.getElementById('subtaskTitle').value.trim();
+            if (!title) { toast('请输入节点名称'); return; }
+            const parent = (currentTasks || []).find(t => t.id === parseInt(parentId, 10));
+            fetch('/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: title,
+                    parent_id: parseInt(parentId, 10),
+                    kind: 'plan',
+                    status: 'todo',
+                    priority: parent ? parent.priority : 'medium',
+                    project: parent ? parent.project : '',
+                    due_date: document.getElementById('subtaskDate').value
+                })
+            }).then(r => r.json()).then(() => {
+                document.getElementById('subtaskTitle').value = '';
+                document.getElementById('subtaskDate').value = '';
+                loadSubtasks(parentId);
+                loadTasks();
+                toast('已添加计划节点');
+            });
+        }
+
+        function toggleSubtask(id, status) {
+            fetch('/api/tasks/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            }).then(r => r.json()).then(() => {
+                loadSubtasks(document.getElementById('editTaskId').value);
+                loadTasks();
+            });
+        }
+
+        function deleteSubtask(id) {
+            if (!confirm('删除该计划节点？')) return;
+            fetch('/api/tasks/' + id, { method: 'DELETE' }).then(() => {
+                loadSubtasks(document.getElementById('editTaskId').value);
+                loadTasks();
+            });
+        }
+
+        const KIND_META = {
+            task: { label: '普通任务', hint: '一次性待办，不做周期提醒。' },
+            routine: { label: '节律', hint: '巡检 / 例行事项：按周期自动滚动，默认提前 30 天提醒，逾期按「待补做」处理。' },
+            commit: { label: '承诺', hint: '对客户的死线：逾期会标红并要求填写原因，默认提前 3 天提醒。' },
+            plan: { label: '计划', hint: '研发排期节点：滑期记为变更（不标红），默认提前 1 天提醒。' }
+        };
+        const KIND_ADVANCE = { task: 0, routine: 30, commit: 3, plan: 1 };
+
+        function pickKind(kind, keepFreq) {
+            document.getElementById('taskKind').value = kind;
+            document.querySelectorAll('#taskKindPicker .kind-opt').forEach(b => {
+                b.classList.toggle('active', b.dataset.kind === kind);
+            });
+            const hint = document.getElementById('taskKindHint');
+            if (hint) hint.textContent = KIND_META[kind] ? KIND_META[kind].hint : '';
+            const freqSel = document.getElementById('taskRepeatFreq');
+            if (!keepFreq && kind === 'routine' && freqSel.value === 'none') freqSel.value = 'monthly';
+            const dueLabel = document.getElementById('taskDueLabel');
+            if (dueLabel) {
+                dueLabel.textContent = kind === 'routine' ? '本期发生日（留空则按周期自动推算）'
+                    : kind === 'commit' ? '客户要求完成日'
+                        : kind === 'plan' ? '计划日期（可留空，由节点决定）'
+                            : '截止日期';
+            }
+            const dvBox = document.getElementById('taskDeliverableBox');
+            if (dvBox) dvBox.style.display = (kind === 'routine' || kind === 'commit') ? '' : 'none';
+            const adv = document.getElementById('taskRemindAdvance');
+            if (adv && !adv.dataset.touched) adv.value = String(KIND_ADVANCE[kind] || 0);
+            const stBox = document.getElementById('subtaskBox');
+            if (stBox) stBox.style.display = (kind === 'plan' || subtaskTotal > 0) ? '' : 'none';
+            taskRepeatChange();
+        }
+
+        function taskRepeatChange() {
+            const freq = document.getElementById('taskRepeatFreq').value;
+            const box = document.getElementById('taskRepeatDayBox');
+            const sel = document.getElementById('taskRepeatDay');
+            const mBox = document.getElementById('taskRepeatMonthBox');
+            const mSel = document.getElementById('taskRepeatMonth');
+            if (mBox) mBox.style.display = (freq === 'yearly') ? '' : 'none';
+            if (freq === 'yearly' && mSel && !mSel.innerHTML) {
+                mSel.innerHTML = Array.from({ length: 12 }, (_, i) =>
+                    `<option value="${i + 1}">${i + 1} 月</option>`).join('');
+                mSel.value = String(new Date().getMonth() + 1);
+            }
+            if (freq === 'none' || freq === 'daily') { box.style.display = 'none'; return; }
+            box.style.display = '';
+            if (freq === 'weekly') {
+                document.getElementById('taskRepeatDayLabel').textContent = '每周几';
+                sel.innerHTML = RT_WEEK.map((w, i) => `<option value="${i}">周${w}</option>`).join('');
+                sel.value = String((new Date().getDay() + 6) % 7);
+            } else {
+                document.getElementById('taskRepeatDayLabel').textContent =
+                    freq === 'quarterly' ? '每季度第几天（31=月底）' : '每月几号（31=月底）';
+                sel.innerHTML = Array.from({ length: 31 }, (_, i) =>
+                    `<option value="${i + 1}">${i + 1 === 31 ? '31 日（月底）' : i + 1 + ' 日'}</option>`).join('');
+            }
+        }
+
+        function showAddTaskModal(status) {
+            document.getElementById('taskModalTitle').textContent = '📝 新任务';
+            document.getElementById('editTaskId').value = '';
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskStatus').value = status || 'todo';
+            document.getElementById('taskPriority').value = 'medium';
+            document.getElementById('taskProject').value = '';
+            document.getElementById('taskDueDate').value = '';
+            document.getElementById('taskLink').value = '';
+            document.getElementById('taskDesc').value = '';
+            document.getElementById('taskDeliverable').value = '';
+            document.getElementById('taskRecurring').checked = true;
+            document.getElementById('taskRepeatFreq').value = 'none';
+            const advEl = document.getElementById('taskRemindAdvance');
+            advEl.value = '0';
+            delete advEl.dataset.touched;
+            subtaskTotal = 0;
+            document.getElementById('subtaskList').innerHTML = '';
+            document.getElementById('subtaskCount').textContent = '';
+            document.getElementById('subtaskTitle').value = '';
+            document.getElementById('subtaskDate').value = '';
+            pickKind('task');
+            document.getElementById('progressType').value = '其他';
+            document.getElementById('progressInput').value = '';
+            document.getElementById('progressList').innerHTML = '<div style="font-size:12px;color:var(--ink-4);text-align:center;padding:8px;">保存任务后即可记录进展</div>';
+            document.getElementById('progressCount').textContent = '';
+            document.getElementById('taskModal').classList.add('active');
+            document.getElementById('taskTitle').focus();
+        }
+
+        function showEditTaskModal(taskId) {
+            fetch(`/api/tasks/${taskId}`)
+                .then(r => r.json())
+                .then(tasks => {
+                    const task = tasks.find(t => t.id === taskId);
+                    if (!task) return;
+                    document.getElementById('taskModalTitle').textContent = '✏️ 编辑任务';
+                    document.getElementById('editTaskId').value = task.id;
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskStatus').value = task.status;
+                    document.getElementById('taskPriority').value = task.priority;
+                    document.getElementById('taskProject').value = task.project;
+                    document.getElementById('taskDueDate').value = task.due_date || '';
+                    document.getElementById('taskLink').value = task.link_url || '';
+                    document.getElementById('taskDesc').value = task.description || '';
+                    document.getElementById('taskDeliverable').value = task.deliverable || '';
+                    document.getElementById('taskRecurring').checked = task.is_recurring === 1;
+                    document.getElementById('taskRepeatFreq').value = task.repeat_freq || 'none';
+                    const advEl = document.getElementById('taskRemindAdvance');
+                    advEl.value = task.remind_advance || 0;
+                    advEl.dataset.touched = '1';
+                    taskRepeatChange();
+                    if (task.repeat_day != null) document.getElementById('taskRepeatDay').value = String(task.repeat_day);
+                    if (task.repeat_month != null) {
+                        const mSel = document.getElementById('taskRepeatMonth');
+                        if (mSel) mSel.value = String(task.repeat_month);
+                    }
+                    pickKind(task.kind || 'task', true);
+                    loadSubtasks(task.id);
+                    const noteBox = document.getElementById('completionNoteBox');
+                    const noteView = document.getElementById('completionNoteView');
+                    if (task.status === 'done' && task.completion_note) {
+                        noteBox.style.display = '';
+                        noteView.textContent = task.completion_note;
+                    } else {
+                        noteBox.style.display = 'none';
+                    }
+                    document.getElementById('progressType').value = '其他';
+                    document.getElementById('progressInput').value = '';
+                    document.getElementById('taskModal').classList.add('active');
+                    loadProgress(task.id);
+                });
+        }
+
+        function saveTask() {
+            const taskId = document.getElementById('editTaskId').value;
+            const title = document.getElementById('taskTitle').value.trim();
+            
+            if (!title) {
+                alert('请输入任务标题');
+                return;
+            }
+
+            const freq = document.getElementById('taskRepeatFreq').value;
+            const data = {
+                title: title,
+                kind: document.getElementById('taskKind').value || 'task',
+                status: document.getElementById('taskStatus').value,
+                priority: document.getElementById('taskPriority').value,
+                project: document.getElementById('taskProject').value.trim(),
+                due_date: document.getElementById('taskDueDate').value,
+                link_url: document.getElementById('taskLink').value.trim(),
+                description: document.getElementById('taskDesc').value.trim(),
+                deliverable: document.getElementById('taskDeliverable').value.trim(),
+                is_recurring: document.getElementById('taskRecurring').checked ? 1 : 0,
+                repeat_freq: freq,
+                repeat_day: (freq === 'weekly' || freq === 'monthly' ||
+                    freq === 'quarterly' || freq === 'yearly')
+                    ? parseInt(document.getElementById('taskRepeatDay').value, 10) || 0
+                    : null,
+                repeat_month: freq === 'yearly'
+                    ? (parseInt(document.getElementById('taskRepeatMonth').value, 10) || null)
+                    : null,
+                remind_advance: parseInt(document.getElementById('taskRemindAdvance').value, 10) || 0
+            };
+
+            const url = taskId ? `/api/tasks/${taskId}` : '/api/tasks';
+            const method = taskId ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(res => {
+                closeModal();
+                loadTasks();
+                loadProjectLinks();
+                if (res && res.generated_next_due) {
+                    toast('🔁 已生成下一期，截止 ' + res.generated_next_due);
+                }
+            });
+        }
+
+        function quickStatus(taskId, newStatus) {
+            if (newStatus === 'done') {
+                // 完成时需填写完成原因
+                openCompletionModal(taskId, null);
+            } else {
+                fetch(`/api/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(r => r.json())
+                .then(() => { loadTasks(); });
+            }
+        }
+
+        function deleteTask(taskId) {
+            if (!confirm('确定删除此任务？')) return;
+            fetch(`/api/tasks/${taskId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(() => { loadTasks(); });
+        }
+
+        // ==================== 任务进展记录 ====================
+        const PROGRESS_TYPE_CLASS = {
+            '研发反馈': 'tp-feedback',
+            '方案变更': 'tp-change',
+            '里程碑': 'tp-milestone',
+            '风险': 'tp-risk',
+            '其他': 'tp-other'
+        };
+
+        function loadProgress(taskId) {
+            const list = document.getElementById('progressList');
+            const countEl = document.getElementById('progressCount');
+            fetch(`/api/tasks/${taskId}/progress`)
+                .then(r => r.json())
+                .then(rows => {
+                    if (!rows || rows.length === 0) {
+                        countEl.textContent = '';
+                        list.innerHTML = '<div style="font-size:12px;color:var(--ink-4);text-align:center;padding:8px;">暂无进展记录</div>';
+                        return;
+                    }
+                    countEl.textContent = `（${rows.length}）`;
+                    list.innerHTML = rows.map(p => {
+                        const cls = PROGRESS_TYPE_CLASS[p.type] || 'tp-other';
+                        const time = (p.created_at || '').replace('T', ' ').slice(0, 16);
+                        const att = p.attachment_url ? ` <a href="${escapeHtml(p.attachment_url)}" target="_blank" style="color:var(--seal);font-size:11px;">🔗 附件</a>` : '';
+                        return `<div class="tp-item" style="padding:7px 0;border-bottom:1px dashed var(--line-soft);">
+                            <div style="display:flex;gap:6px;align-items:center;margin-bottom:3px;">
+                                <span class="tp-badge ${cls}">${escapeHtml(p.type)}</span>
+                                <span style="font-size:11px;color:var(--ink-4);">${escapeHtml(time)}</span>
+                                <button class="btn btn-link" style="font-size:11px;color:var(--brand);margin-left:auto;" onclick="deleteProgress(${p.id})">✕ 删除</button>
+                            </div>
+                            <div class="tp-content">${escapeHtml(p.content)}${att}</div>
+                        </div>`;
+                    }).join('');
+                })
+                .catch(() => {
+                    list.innerHTML = '<div style="font-size:12px;color:var(--ink-4);text-align:center;padding:8px;">进展加载失败</div>';
+                });
+        }
+
+        function addProgress() {
+            const taskId = document.getElementById('editTaskId').value;
+            if (!taskId) { alert('请先保存任务，再记录进展'); return; }
+            const ta = document.getElementById('progressInput');
+            const content = ta.value.trim();
+            if (!content) return;
+            const type = document.getElementById('progressType').value;
+            fetch(`/api/tasks/${taskId}/progress`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ type: type, content: content })
+            })
+            .then(r => r.json())
+            .then(() => {
+                ta.value = '';
+                loadProgress(taskId);
+                loadTasks();
+            });
+        }
+
+        function deleteProgress(progressId) {
+            if (!confirm('删除这条进展记录？')) return;
+            const taskId = document.getElementById('editTaskId').value;
+            fetch(`/api/tasks/progress/${progressId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(() => {
+                    loadProgress(taskId);
+                    loadTasks();
+                });
+        }
+
+        // ==================== 完成原因弹窗 ====================
+        let pendingComplete = { taskId: null, parentId: null };
+
+        function openCompletionModal(taskId, parentId) {
+            pendingComplete = { taskId: taskId, parentId: parentId };
+            document.getElementById('completionNote').value = '';
+            document.getElementById('completionDate').value = currentDate;
+            document.getElementById('completionModal').classList.add('active');
+            setTimeout(() => document.getElementById('completionNote').focus(), 50);
+        }
+
+        function confirmCompletion() {
+            const note = document.getElementById('completionNote').value.trim();
+            const cdate = document.getElementById('completionDate').value;
+            const { taskId, parentId } = pendingComplete;
+            fetch(`/api/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    status: 'done',
+                    completion_note: note,
+                    completed_date: cdate
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                closeCompletionModal();
+                if (res && res.generated_next_due) {
+                    toast('🔁 已生成下一期，截止 ' + res.generated_next_due);
+                }
+            });
+        }
+
+        function closeCompletionModal() {
+            document.getElementById('completionModal').classList.remove('active');
+            pendingComplete = { taskId: null, parentId: null };
+            loadTasks();
+        }
+
+        function closeModal() {
+            document.getElementById('taskModal').classList.remove('active');
+        }
+
+        // ==================== 项目填报链接 ====================
+        function loadProjectLinks() {
+            fetch('/api/project-links')
+                .then(r => r.json())
+                .then(links => {
+                    const list = document.getElementById('projectLinkList');
+                    if (links.length === 0) {
+                        list.innerHTML = '<div style="text-align:center;padding:15px;color:var(--ink-4);font-size:13px;">暂无项目链接</div>';
+                        return;
+                    }
+                    list.innerHTML = links.map(link => `
+                        <div class="project-link-item">
+                            <div class="link-info">
+                                <div class="project-name">${escapeHtml(link.project_name)}</div>
+                                <a href="${escapeHtml(link.url)}" target="_blank" title="${escapeHtml(link.url)}">${escapeHtml(link.url)}</a>
+                            </div>
+                            <div class="link-actions">
+                                <button class="btn btn-danger btn-sm" onclick="deleteProjectLink(${link.id})">✕</button>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function addProjectLink() {
+            const name = document.getElementById('newProjectName').value.trim();
+            const url = document.getElementById('newProjectUrl').value.trim();
+
+            if (!name || !url) {
+                alert('请填写项目名称和URL');
+                return;
+            }
+
+            fetch('/api/project-links', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    project_name: name,
+                    url: url
+                })
+            })
+            .then(r => r.json())
+            .then(() => {
+                document.getElementById('newProjectName').value = '';
+                document.getElementById('newProjectUrl').value = '';
+                loadProjectLinks();
+            });
+        }
+
+        function deleteProjectLink(linkId) {
+            if (!confirm('确定删除此项目链接？')) return;
+            fetch(`/api/project-links/${linkId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(() => loadProjectLinks());
+        }
+
+        // ==================== 报表中心 ====================
+        function loadReports() {
+            loadReportOverview();
+            loadDailyLedger();
+            loadByProject();
+            loadByStatusPriority();
+        }
+
+        function loadReportOverview() {
+            fetch('/api/report/overview').then(r => r.json()).then(d => {
+                const cards = [
+                    { n: d.total, l: '任务总数', c: 'rc-seal' },
+                    { n: d.in_progress, l: '进行中', c: '' },
+                    { n: d.done, l: '已完成', c: 'rc-jade' },
+                    { n: d.overdue, l: '逾期', c: 'rc-gold' }
+                ];
+                document.getElementById('reportCards').innerHTML = cards.map(x =>
+                    `<div class="report-card ${x.c}"><div class="rc-num">${x.n}</div><div class="rc-label">${x.l}</div></div>`
+                ).join('');
+            });
+        }
+
+        function loadDailyLedger() {
+            fetch('/api/daily-ledger?days=30').then(r => r.json()).then(days => {
+                const box = document.getElementById('dailyLedger');
+                if (!days || days.length === 0) {
+                    box.innerHTML = '<div style="text-align:center;padding:12px;color:var(--ink-4);font-size:12px;">近 30 天暂无工作动态</div>';
+                    return;
+                }
+                box.innerHTML = days.map(d => {
+                    const items = [];
+                    d.progress.forEach(it => {
+                        const t = it.task_title ? `${it.project ? '〔' + escapeHtml(it.project) + '〕' : ''}${escapeHtml(it.task_title)}：` : '';
+                        const tm = it.time ? `<span style="color:var(--ink-4);">（${it.time}）</span>` : '';
+                        items.push(`<div class="ci-content" style="padding:2px 0;">📝 ${t}${escapeHtml(it.content)}${tm}</div>`);
+                    });
+                    d.created.forEach(it => items.push(`<div class="ci-content" style="padding:2px 0;">🆕 ${escapeHtml(it.title)}${it.project ? ' 〔' + escapeHtml(it.project) + '〕' : ''}</div>`));
+                    d.done.forEach(it => items.push(`<div class="ci-content" style="padding:2px 0;">✅ ${escapeHtml(it.title)}${it.project ? ' 〔' + escapeHtml(it.project) + '〕' : ''}${it.note ? ' —— ' + escapeHtml(it.note) : ''}</div>`));
+                    return `<div class="chronicle-item">
+                        <div class="ci-head"><span class="ci-cat">${d.date}</span><span style="color:var(--ink-4);font-size:11px;">进展 ${d.progress.length} · 新建 ${d.created.length} · 完成 ${d.done.length}</span></div>
+                        ${items.join('')}
+                    </div>`;
+                }).join('');
+            }).catch(() => {
+                const box = document.getElementById('dailyLedger');
+                if (box) box.innerHTML = '<div style="text-align:center;padding:12px;color:var(--ink-4);font-size:12px;">流水账加载失败</div>';
+            });
+        }
+
+        function loadByProject() {
+            fetch('/api/report/by-project').then(r => r.json()).then(rows => {
+                const box = document.getElementById('byProject');
+                if (!rows || rows.length === 0) {
+                    box.innerHTML = '<div style="color:var(--ink-4);font-size:12px;">暂无数据</div>';
+                    return;
+                }
+                const max = Math.max(...rows.map(r => r.total), 1);
+                box.innerHTML = rows.map(r => `
+                    <div class="rb-row">
+                        <div class="rb-top"><span class="rb-name">${escapeHtml(r.project)}</span><span class="rb-val">${r.total} 项 · 完成 ${r.done}（${r.rate}%）</span></div>
+                        <div class="rb-track"><div class="rb-fill" style="width:${Math.round(r.total / max * 100)}%"></div></div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function loadByStatusPriority() {
+            Promise.all([
+                fetch('/api/report/by-status').then(r => r.json()),
+                fetch('/api/report/by-priority').then(r => r.json())
+            ]).then(([st, pr]) => {
+                const stLabel = { todo: '待办', in_progress: '进行中', done: '已完成' };
+                const prLabel = { high: '高', medium: '中', low: '低' };
+                let html = '<div style="font-size:12.5px;color:var(--ink-4);margin-bottom:6px;">按状态</div>';
+                const stMax = Math.max(...st.map(x => x.count), 1);
+                html += st.map(x => `<div class="rb-row"><div class="rb-top"><span class="rb-name">${stLabel[x.status] || x.status}</span><span class="rb-val">${x.count} 项</span></div><div class="rb-track"><div class="rb-fill" style="width:${Math.round(x.count / stMax * 100)}%"></div></div></div>`).join('');
+                const prMax = Math.max(...pr.map(x => x.count), 1);
+                html += '<div style="font-size:12.5px;color:var(--ink-4);margin:12px 0 6px;">按优先级</div>';
+                html += pr.map(x => `<div class="rb-row"><div class="rb-top"><span class="rb-name">${prLabel[x.priority] || x.priority}优先级</span><span class="rb-val">${x.count} 项</span></div><div class="rb-track"><div class="rb-fill" style="width:${Math.round(x.count / prMax * 100)}%"></div></div></div>`).join('');
+                document.getElementById('byStatus').innerHTML = html;
+            });
+        }
+
+        function exportReport() {
+            const p = document.getElementById('reportPeriod').value;
+            let url = '/api/report/export';
+            if (p) url += '?' + (p.indexOf('-Q') >= 0 ? 'period=' + encodeURIComponent(p) : 'year=' + encodeURIComponent(p));
+            window.location.href = url;
+        }
+
+
+        // ==================== 便利贴 ====================
+        function loadNotes() {
+            const list = document.getElementById('noteList');
+            if (!list) return;
+            fetch('/api/notes')
+                .then(r => r.json())
+                .then(notes => {
+                    if (!notes || notes.length === 0) {
+                        list.innerHTML = '<div class="note-empty">还没有便利贴，在下方贴一张吧</div>';
+                        return;
+                    }
+                    list.innerHTML = notes.map(n => `
+                        <div class="note-card" data-id="${n.id}">
+                            <span class="note-cat">${escapeHtml(n.category)}</span>
+                            <div class="note-content" ondblclick="startEditNote(${n.id})">${escapeHtml(n.content)}</div>
+                            <button class="note-del" onclick="deleteNote(${n.id})" title="撕掉">✕</button>
+                        </div>
+                    `).join('');
+                })
+                .catch(() => {
+                    list.innerHTML = '<div class="note-empty">便利贴加载失败</div>';
+                });
+        }
+
+        function addNote() {
+            const ta = document.getElementById('newNote');
+            const cat = document.getElementById('newNoteCategory');
+            const content = ta.value.trim();
+            if (!content) return;
+            fetch('/api/notes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ content: content, category: cat.value })
+            })
+            .then(r => r.json())
+            .then(() => {
+                ta.value = '';
+                loadNotes();
+            });
+        }
+
+        function deleteNote(noteId) {
+            if (!confirm('撕掉这张便利贴？')) return;
+            fetch(`/api/notes/${noteId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(() => loadNotes());
+        }
+
+        function startEditNote(noteId) {
+            const card = document.querySelector(`.note-card[data-id="${noteId}"]`);
+            if (!card) return;
+            const contentDiv = card.querySelector('.note-content');
+            const current = contentDiv.textContent;
+            contentDiv.outerHTML = `<textarea class="note-edit" id="note-edit-${noteId}">${escapeHtml(current)}</textarea>`;
+            const ta = document.getElementById(`note-edit-${noteId}`);
+            ta.focus();
+            ta.setSelectionRange(ta.value.length, ta.value.length);
+            const save = () => {
+                const val = ta.value.trim();
+                if (!val) { loadNotes(); return; }
+                fetch(`/api/notes/${noteId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ content: val })
+                })
+                .then(r => r.json())
+                .then(() => loadNotes());
+            };
+            ta.addEventListener('blur', save);
+            ta.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && (e.ctrlKey || e.altKey)) { e.preventDefault(); ta.blur(); }
+                if (e.key === 'Escape') { e.preventDefault(); loadNotes(); }
+            });
+        }
+
+        // （每日工作日志相关旧函数已移除，由报表中心 chronicle / report 接口替代）
+
+        // ==================== 工具函数 ====================
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function toast(msg) {
+            let el = document.getElementById('wb-toast');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'wb-toast';
+                el.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(30,32,36,0.92);color:#fff;padding:9px 18px;border-radius:6px;font-size:13px;font-family:var(--font-ui);z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,0.25);opacity:0;transition:opacity .25s ease;pointer-events:none;';
+                document.body.appendChild(el);
+            }
+            el.textContent = msg;
+            el.style.opacity = '1';
+            clearTimeout(el._t);
+            el._t = setTimeout(() => { el.style.opacity = '0'; }, 1800);
+        }
+
+        function exportData() {
+            fetch('/api/export')
+                .then(r => r.json())
+                .then(result => {
+                    if (result.success) {
+                        alert(`✅ 数据已导出\n文件: ${result.filename}\n位置: exports 目录`);
+                    }
+                });
+        }
+
+        function backupNow() {
+            fetch('/api/backup-now', { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) toast('✓ 已备份: backup/' + d.filename);
+                    else toast('备份失败: ' + (d.error || '未知错误'));
+                })
+                .catch(() => toast('备份失败，请重试'));
+        }
+
+        // ==================== 提醒中心 ====================
+        let remindData = null;
+        const REMIND_NOTIFY_KEY = 'wb_remind_last_total';
+
+        function loadReminders() {
+            fetch('/api/reminders')
+                .then(r => r.json())
+                .then(d => { remindData = d; rcLastLoad = Date.now(); renderReminders(); })
+                .catch(() => {});
+        }
+
+        // ==================== 里程碑页（时间轴视图） ====================
+        let rcLastLoad = 0;
+        function loadReminderPage(force) {
+            const fresh = remindData && (Date.now() - rcLastLoad) < 60000;
+            if (!force && fresh) { renderReminderPage(remindData); return; }
+            fetch('/api/reminders')
+                .then(r => r.json())
+                .then(d => { remindData = d; rcLastLoad = Date.now(); renderReminders(); renderReminderPage(d); })
+                .catch(() => {});
+        }
+        function rcOpenTask(id) {
+            showEditTaskModal(id);
+        }
+        function rcJump(key) {
+            const el = document.getElementById('rc-sec-' + key);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        const RC_WHEN_TXT = { routine: '该做', commit: '截止', plan: '计划' };
+
+        function rcWhenHtml(t) {
+            if (!t.due_date) return '<span class="rc-when">未排期</span>';
+            const late = t.days_left < 0 ? ' rc-late' : '';
+            const tail = t.days_left < 0 ? ' · 已逾期 ' + t.days_late + ' 天'
+                : t.days_left === 0 ? ' · 今天'
+                    : ' · ' + t.days_left + ' 天后';
+            return '<span class="rc-when' + late + '">' + t.due_date.slice(5) + ' '
+                + (RC_WHEN_TXT[t.kind] || '截止') + tail + '</span>';
+        }
+
+        function rcItemHtml(t) {
+            const tags = [];
+            if (t.project) tags.push(`<span class="tag tag-project">${escapeHtml(t.project)}</span>`);
+            tags.push(`<span class="tag rc-kind rc-kind-${t.kind}">${t.kind_label}</span>`);
+            if (t.deliverable) tags.push(`<span class="tag tag-deliverable">交《${escapeHtml(t.deliverable)}》</span>`);
+            if (t.repeat_desc) tags.push(`<span class="tag tag-repeat">${t.repeat_desc}</span>`);
+            if (t.priority === 'high') tags.push('<span class="tag tag-priority-high">高优先</span>');
+            const extra = [];
+            if (t.stage_desc) extra.push(`<span class="rc-stage">${t.stage_desc}</span>`);
+            if (t.next_node) extra.push(`<span class="rc-node">下一节点：${escapeHtml(t.next_node)}</span>`);
+            const over = (t.kind === 'commit' && t.days_left < 0) ? ' rc-over' : '';
+            return `<div class="rc-item rc-item-${t.kind}${over}" onclick="rcOpenTask(${t.id})">
+                <div class="rc-item-main">
+                    <div class="rc-item-title">${escapeHtml(t.title)}</div>
+                    <div class="rc-item-meta">${tags.join('')}</div>
+                    <div class="rc-item-meta rc-meta-2">${rcWhenHtml(t)}${extra.join('')}</div>
+                </div>
+                <button class="btn btn-sm" onclick="event.stopPropagation();rcOpenTask(${t.id})">${t.due_date ? '处理' : '设日期'} ›</button>
+            </div>`;
+        }
+
+        function renderReminderPage(d) {
+            const statsEl = document.getElementById('rcStats');
+            const secsEl = document.getElementById('rcSections');
+            const hintEl = document.getElementById('rcHint');
+            if (!statsEl || !secsEl) return;
+            const c = d.counts || {};
+            const cards = [
+                ['overdue', '已逾期', c.overdue || 0, 'now'],
+                ['today', '今日', c.today || 0, 'now'],
+                ['week', '未来 7 天', c.week || 0, 'soon'],
+                ['unscheduled', '待排期', c.unscheduled || 0, 'unscheduled'],
+            ];
+            statsEl.innerHTML = cards.map(([k, label, n, jump]) =>
+                `<div class="rc-card ${n ? 'rc-' + k : 'rc-zero'}" ${n ? `onclick="rcJump('${jump}')"` : ''}>
+                    <div class="rc-num">${n}</div><div class="rc-label">${label}</div>
+                </div>`).join('');
+            const secs = d.sections || [];
+            const html = secs.filter(s => s.items.length).map(s => `
+                <section class="panel rc-section" id="rc-sec-${s.key}">
+                    <h3>${s.label} <span class="gh-count">${s.items.length}</span> <span style="font-size:12px;font-weight:400;color:var(--ink-4);">${s.hint}</span></h3>
+                    <div class="rc-list">${s.items.map(rcItemHtml).join('')}</div>
+                </section>`).join('');
+            secsEl.innerHTML = html || '<section class="panel"><div class="remind-empty">🎉 没有到期事项，一切尽在掌握</div></section>';
+            if (hintEl) hintEl.textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN', { hour12: false });
+        }
+
+        function remindTotal(d) {
+            if (!d) return 0;
+            return (d.overdue.count || 0) + (d.due_today.count || 0) + (d.due_soon.count || 0);
+        }
+
+        function remindItemHtml(t) {
+            const meta = [t.project, t.due_date ? '⏰ ' + t.due_date : ''].filter(Boolean).join(' · ');
+            return `<div class="remind-item" onclick="openTaskFromRemind(${t.id})">
+                <span class="ri-title">${escapeHtml(t.title)}</span>
+                <span class="ri-meta">${escapeHtml(meta)}</span>
+            </div>`;
+        }
+
+        function renderReminders() {
+            const badge = document.getElementById('bellBadge');
+            const panel = document.getElementById('remindPanel');
+            const total = remindTotal(remindData);
+            if (badge) {
+                badge.style.display = total > 0 ? '' : 'none';
+                badge.textContent = total > 99 ? '99+' : total;
+            }
+            if (!panel) return;
+            if (!remindData || total === 0) {
+                panel.innerHTML = '<div class="remind-empty">🎉 暂无提醒，一切尽在掌握</div>';
+                maybeDesktopNotify(total);
+                return;
+            }
+            const groups = [];
+            if (remindData.overdue.count) groups.push(['🔴 已逾期', remindData.overdue, 'rg-overdue', remindItemHtml]);
+            if (remindData.due_today.count) groups.push(['🟠 今日到期', remindData.due_today, 'rg-today', remindItemHtml]);
+            if (remindData.due_soon.count) groups.push(['🟡 未来 7 天到期', remindData.due_soon, 'rg-soon', remindItemHtml]);
+            panel.innerHTML = groups.map(([label, g, cls, itemFn]) => `
+                <div class="remind-group">
+                    <div class="remind-group-title ${cls}"><span>${label}</span><span class="rg-n">${g.count}</span></div>
+                    ${g.items.map(itemFn).join('')}
+                </div>`).join('') + `
+                <div class="remind-foot">
+                    <span class="rf-time">数据截至 ${escapeHtml(remindData.today)} · 每 5 分钟自动刷新</span>
+                    <button class="btn-link" onclick="enableDesktopNotify()">🔔 开启桌面通知</button>
+                </div>`;
+            maybeDesktopNotify(total);
+        }
+
+        function toggleReminders() {
+            const panel = document.getElementById('remindPanel');
+            if (!panel) return;
+            // 仅以 'none' 判定隐藏：打开后 display 为 ''，若把 '' 也当作"未打开"会导致面板永远关不上
+            const isHidden = panel.style.display === 'none';
+            panel.style.display = isHidden ? '' : 'none';
+            if (isHidden) loadReminders();
+        }
+
+        function openTaskFromRemind(id) {
+            const panel = document.getElementById('remindPanel');
+            if (panel) panel.style.display = 'none';
+            switchView('board');
+            showEditTaskModal(id);
+        }
+
+        function maybeDesktopNotify(total) {
+            try {
+                const last = parseInt(localStorage.getItem(REMIND_NOTIFY_KEY) || '0', 10);
+                localStorage.setItem(REMIND_NOTIFY_KEY, String(total));
+                if (typeof Notification === 'undefined') return;
+                if (Notification.permission !== 'granted') return;
+                if (total > last) {
+                    const d = remindData;
+                    const lines = [];
+                    if (d.overdue.count) lines.push(`已逾期 ${d.overdue.count}`);
+                    if (d.due_today.count) lines.push(`今日到期 ${d.due_today.count}`);
+                    if (d.due_soon.count) lines.push(`临期 ${d.due_soon.count}`);
+                    new Notification('工作台任务提醒', { body: lines.join('，') || '有新的任务动态' });
+                }
+            } catch (e) {}
+        }
+
+        function enableDesktopNotify() {
+            try {
+                if (typeof Notification === 'undefined') { toast('当前环境不支持桌面通知'); return; }
+                if (Notification.permission === 'granted') { toast('桌面通知已开启'); return; }
+                Notification.requestPermission().then(p => {
+                    toast(p === 'granted' ? '✅ 桌面通知已开启' : '未授权桌面通知');
+                });
+            } catch (e) {}
+        }
+
+        // 点击面板/铃铛以外区域关闭提醒面板
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('remindPanel');
+            const btn = document.getElementById('btnReminders');
+            if (!panel || panel.style.display === 'none') return;
+            if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
+            panel.style.display = 'none';
+        });
+
+        // 点击模态框外部关闭
+        document.getElementById('taskModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        document.getElementById('completionModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCompletionModal();
+        });
+        document.getElementById('batchCompleteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeBatchCompleteModal();
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeCompletionModal();
+            }
+            if (e.key === 'n' && e.ctrlKey) {
+                e.preventDefault();
+                showAddTaskModal();
+            }
+            // 「/」聚焦看板检索框：仅在任务看板视图、且焦点不在可输入元素上时生效，
+            // 否则会和正在输入的内容打架。Esc 在检索框内清空（见 onBoardSearchKeydown）。
+            if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const tg = e.target || {};
+                const tag = String(tg.tagName || '').toUpperCase();
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tg.isContentEditable) return;
+                const vb = document.getElementById('view-board');
+                if (vb && vb.classList && vb.classList.contains('active')) {
+                    e.preventDefault();
+                    focusBoardSearch();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

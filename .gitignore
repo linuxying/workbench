@@ -1,0 +1,65 @@
+﻿# Python
+__pycache__/
+*.pyc
+venv/
+*.egg-info/
+
+# 数据库（运行时文件，不纳入版本控制）
+workbench.db
+workbench.db-shm
+workbench.db-wal
+
+# 数据库备份
+backup/
+
+# 导出文件
+exports/
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统
+Thumbs.db
+.DS_Store
+
+# 备份与临时
+*.bak
+final_test.txt
+*.log
+
+# PyInstaller 打包产物
+build/
+dist/
+release/
+build_log.txt
+*.spec
+
+# 本地 UI 验证截图（含真实项目数据，禁止入库）
+_shots/
+_verify/
+_shot*.js
+_newstyle.css
+
+# 本地 UI 验证辅助脚本与产物（含真实数据快照，不入库）
+_probe_board.js
+_probe_hover.js
+_probe_sort.js
+_probe_search.js
+_probe_stat.js
+_probe_hit.js
+_hover_out.json
+_sort_*.json
+_shot_board.js
+_run_verify.py
+_index_new.html
+_verify_wb.db
+_iso/
+templates/*.bak-*
+workbench.py.bak-*
+
+# 发布前敏感信息扫描器（本地工具，其规则样本含敏感关键词本身，不入库）
+_scan_sensitive.py
+_desensitize.py
